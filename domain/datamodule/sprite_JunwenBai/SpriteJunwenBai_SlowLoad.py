@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Tuple, Optional, Callable
 
 
-class SpriteJunwenBai(VisionDataset):
+class SpriteJunwenBai_SlowLoad(VisionDataset):
     ''' Sprite Dataset (shared by Junwen Bai)
         - sequence
             - train: 9000
@@ -55,19 +55,10 @@ class SpriteJunwenBai(VisionDataset):
         # import ipdb; ipdb.set_trace()
 
         return index, {
-            "images" : self.to_tensor_image(data_ancher).cuda(),
-            "c_aug"  : self.to_tensor_image(c_aug_anchor).cuda(),
-            "m_aug"  : self.to_tensor_image(m_aug_anchor).cuda(),
-            "A_label": self.to_tensor_label(A_label_ancher).cuda(),
-            "D_label": self.to_tensor_label(np.array([D_label_ancher])).cuda(),
+            "images" : data_ancher,
+            "c_aug"  : c_aug_anchor,
+            "m_aug"  : m_aug_anchor,
+            "A_label": A_label_ancher,
+            "D_label": D_label_ancher,
             "index"  : index,
         }
-
-
-    def to_tensor_image(self, pic):
-        assert len(pic.shape) == 4 # (step, width, height, channel)
-        return torch.from_numpy(pic).permute((0, 3, 1, 2)).contiguous()
-
-    def to_tensor_label(self, label):
-        # assert len(pic.shape) == 4 # (step, width, height, channel)
-        return torch.from_numpy(label).contiguous()

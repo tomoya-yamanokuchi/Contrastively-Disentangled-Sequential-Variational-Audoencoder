@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Tuple, Optional, Callable
 
 
-class SpriteJunwenBai(VisionDataset):
+class SpriteJunwenBai_FastLoad(VisionDataset):
     ''' Sprite Dataset (shared by Junwen Bai)
         - sequence
             - train: 9000

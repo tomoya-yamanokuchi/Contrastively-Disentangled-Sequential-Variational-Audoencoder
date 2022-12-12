@@ -109,7 +109,6 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
         # x, label_A, label_D, c_aug, m_aug = reorder(data['images']), data['A_label'], data['D_label'], reorder(data['c_aug']), reorder(data['m_aug'])
         # x, label_A, label_D, c_aug, m_aug = x.cuda(), label_A.cuda(), label_D.cuda(), c_aug.cuda(), m_aug.cuda()
         x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
-        # import ipdb; ipdb.set_trace()
 
         results_dict              = self.model.forward(x)     # original
         results_dict_aug_context  = self.model.forward(c_aug) # augment context

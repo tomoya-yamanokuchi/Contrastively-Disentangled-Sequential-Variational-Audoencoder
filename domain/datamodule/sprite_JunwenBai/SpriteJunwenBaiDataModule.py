@@ -2,8 +2,12 @@ import pickle
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from typing import Optional
-from .SpriteJunwenBai_fastload import SpriteJunwenBai
 
+from .SpriteJunwenBai_FastLoad import SpriteJunwenBai_FastLoad as SpriteJunwenBai
+# from .SpriteJunwenBai_SlowLoad import SpriteJunwenBai_SlowLoad as SpriteJunwenBai
+
+import torch
+torch.multiprocessing.set_start_method('spawn')
 
 
 class SpriteJunwenBaiDataModule(pl.LightningDataModule):
@@ -50,7 +54,11 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
 
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(
+            dataset     = self.train,
+            batch_size  = self.batch_size,
+            shuffle     = True,
+        )
 
     def val_dataloader(self):
         return DataLoader(self.val, batch_size=self.batch_size, shuffle=False)
