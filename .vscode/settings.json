@@ -1,0 +1,39 @@
+{
+    "python.languageServer"        : "Pylance",
+    "python.pythonPath"            : "/usr/bin/python3.8",
+    "editor.fontFamily"            : "Ubuntu Mono",
+    "editor.tabSize"               : 4,
+    "window.zoomLevel"             : 2,
+    "editor.fontSize"              : 16,
+    "debug.console.fontSize"       : 16,
+    "terminal.integrated.fontSize" : 16,
+    "workbench.tree.indent"        : 25, // exploreに表示されるファイル一覧のインデント幅
+    "editor.insertSpaces"          : true,
+
+    "python.testing.pytestEnabled"   : false,
+    "python.testing.nosetestsEnabled": false,
+
+    // exploreに表示しないファイル・ディレクトリ
+    "files.exclude": {
+        "logs"       : true,
+        "figs"       : true,
+        "logs_sprite": true,
+        "summary"    : true,
+        "judges"     : true
+    },
+
+    // << trailing-spaces >>
+    "trailing-spaces.backgroundColor": "rgba(255,0,0,0.0)",
+    "trailing-spaces.trimOnSave"     : true,
+
+    "indentOneSpace.workOnSingleLine" : true,    // Even if 1 character on 1 line is selected - the command will work.
+    "indentOneSpace.cramReversed"     : true,    // Outdent lines even if one of them has reached column 0 (gutter).
+    "indentOneSpace.onlyCompleteRange": false,   // Indent works only when selection has nothing or whitespace characters on the sides
+
+    "bracket-pair-colorizer-2.colors": [
+        "Gold",
+        "Orchid",
+        "LightSkyBlue"
+    ],
+    "ros.distro": "noetic",
+}

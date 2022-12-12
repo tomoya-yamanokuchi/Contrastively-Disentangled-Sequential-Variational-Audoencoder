@@ -1,0 +1,31 @@
+name             : dsvae_valve
+in_channels      : 3
+
+network:
+  # Frame Encoder
+  frame_encoder:
+    conv_out_channels: [32, 64, 128, 256]
+    conv_fc_out_dims : [4096, 2048]
+
+  # Context Encoder
+  context_encoder:
+    lstm_hidden_dim  : 512
+    context_dim      : 5
+
+  # DynamicalState Encoder
+  dynamical_state_encoder:
+    hidden_dim : 512
+    state_dim  : 12
+
+  # Frame Decoder
+  frame_decoder:
+    deconv_fc_out_dims : [2048, 4096]
+    deconv_in_channel  : 256
+    deconv_out_channels: [128, 128, 64, 32]
+
+  # DynamicsModel
+  dynamics_model:
+    state_dim  : 12
+    hidden_dim : 512
+
+kld_weight       : 0.0001

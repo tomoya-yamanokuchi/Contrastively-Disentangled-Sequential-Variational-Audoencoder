@@ -1,0 +1,31 @@
+defaults:
+  - model    : vae
+  - raytune  : async_with_optuna
+  - notify   : slack
+
+datamodule:
+  name       : "mnist"
+  data_dir   : "./data/"
+  # batch_size : 256
+  # shuffle    : False
+  # num_workers: 0
+  # pin_memory : False
+
+logger:
+  save_dir: "logs/"
+  name    : "VAE"
+
+experiment:
+  manual_seed: 1265
+
+trainer:
+  gpus                : [0]
+  limit_train_batches : 100
+  max_epochs          : 30
+
+checkpoint:
+  every_n_epochs          : 1
+  monitor                 : "Reconstruction_Loss"
+  save_last               : False
+  save_on_train_epoch_end : True
+

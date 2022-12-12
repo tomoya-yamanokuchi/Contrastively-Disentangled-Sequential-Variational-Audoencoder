@@ -1,0 +1,7 @@
+logs
+summary
+outputs
+data/
+lightning_logs/
+*.pyc
+

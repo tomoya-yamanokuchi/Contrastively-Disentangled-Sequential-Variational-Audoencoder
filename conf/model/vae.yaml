@@ -1,0 +1,6 @@
+name             : vae
+in_channels      : 3
+conv_out_channels: [32, 64, 128, 256]
+# fc_out_dims      : [128, 64]
+latent_dim       : 2
+kld_weight       : 0.0001
