@@ -1,5 +1,6 @@
 logs
 summary
+summary_fig
 outputs
 data/
 lightning_logs/
