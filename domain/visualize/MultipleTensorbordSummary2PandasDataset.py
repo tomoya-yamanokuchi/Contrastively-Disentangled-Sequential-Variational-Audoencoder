@@ -19,8 +19,10 @@ class MultipleTensorbordSummary2PandasDataset:
     STEP      = 1
     VALUE     = 2
 
-    def __init__(self, log_dir: str) -> None:
-        self.log_dir    = log_dir
+    def __init__(self, logs: str, name: str) -> None:
+        self.logs       = logs
+        self.name       = name
+        self.log_dir    = os.path.join(logs, name)
         self.model_list = None
         self.tags       = None
 
@@ -69,7 +71,7 @@ class MultipleTensorbordSummary2PandasDataset:
         if path_list == []:
             # version_000 がなければ作る
             number  = str(0).zfill(3)
-            dirname = os.path.join(dir, "version_" + number)
+            dirname = os.path.join(dir, "{}_version_{}".format(self.name, number))
             os.makedirs(dirname)
         else:
             # すでにあれば追加して作る
@@ -77,7 +79,7 @@ class MultipleTensorbordSummary2PandasDataset:
             latent_name   = latest_path.split("/")[-1]
             latent_number = latent_name[-3:]
             number        = str(int(latent_number) + 1).zfill(3)
-            dirname       = os.path.join(dir, "version_" + number)
+            dirname       = os.path.join(dir, "{}_version_{}".format(self.name, number))
             os.makedirs(dirname)
 
         Path(os.path.join(dirname, "all")).mkdir(parents=True, exist_ok=True)
@@ -107,8 +109,8 @@ class MultipleTensorbordSummary2PandasDataset:
         # ax.set_xticks([t_min, t_max])
         # ax.set_yticks([t_min, t_max])
 
-        lines, labels = fig.axes[-1].get_legend_handles_labels()
-        fig.legend(lines, labels, loc = 'upper center', ncol=1, bbox_to_anchor=(0, 0.6, 0.9, 0.45), fontsize=10)
+        # lines, labels = fig.axes[-1].get_legend_handles_labels()
+        # fig.legend(lines, labels, loc = 'upper center', ncol=1, bbox_to_anchor=(0, 0.6, 0.9, 0.45), fontsize=10)
         fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
         fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
         plt.close()
@@ -138,8 +140,8 @@ class MultipleTensorbordSummary2PandasDataset:
         ax.set_ylabel(label)
         ax.set_title("Number of Model = {}".format(num_list))
 
-        lines, labels = fig.axes[-1].get_legend_handles_labels()
-        fig.legend(lines, labels, loc = 'upper center', ncol=2, bbox_to_anchor=(0, 0.6, 0.9, 0.45), fontsize=10)
+        # lines, labels = fig.axes[-1].get_legend_handles_labels()
+        # fig.legend(lines, labels, loc = 'upper center', ncol=2, bbox_to_anchor=(0, 0.6, 0.9, 0.45), fontsize=10)
         fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
         fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
         plt.close()
