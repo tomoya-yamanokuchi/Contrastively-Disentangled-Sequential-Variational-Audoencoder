@@ -15,15 +15,20 @@ datamodule:
   batch_size : 128
 
 logger:
-  save_dir: "logs/"
-  name    : "cdsvae_develop"
+  save_dir         : "logs/"
+  name             : "cdsvae4"
+  default_hp_metric: False
 
 experiment:
-  manual_seed: 1265
+  # manual_seed: 1265
+  manual_seed:
 
 trainer:
   gpus                : [0]
   max_epochs          : 100
+  enable_progress_bar : True
+  deterministic       : False
+  log_every_n_steps   : 1
 
 optimizer:
   lr   : 0.001

@@ -37,8 +37,11 @@ class Training:
 
 
     def _run(self, config):
-        seed = seed_everything(config.experiment.manual_seed, True)
-        print("seed: ", seed)
+        if config.experiment.manual_seed is not None:
+            seed_everything(config.experiment.manual_seed, True)
+        print("-------------------")
+        print("   seed: ", config.experiment.manual_seed)
+        print("-------------------")
 
         data            = DataModuleFactory().create(**config.datamodule)
         lit_model_class = ModelFactory().create(config.model.name)
@@ -78,7 +81,7 @@ class Training:
 
     def get_hostname(self):
         hostname_dict = {
-            "dl-box0"               : "dl-box",
+            "dl-box0"              : "dl-box",
             "G-Master-Spear-MELCO" : "melco",
             "tomoya-y-device"      : "remote_3090",
         }

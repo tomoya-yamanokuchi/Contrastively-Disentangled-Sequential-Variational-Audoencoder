@@ -3,7 +3,6 @@ import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resol
 import numpy as np
 import json
 from pprint import pprint
-import torchinfo
 import torch
 from torch import optim
 from torchvision import utils
@@ -12,20 +11,8 @@ from typing import List, Any
 import pytorch_lightning as pl
 from .ContrastiveDisentangledSequentialVariationalAutoencoder import ContrastiveDisentangledSequentialVariationalAutoencoder
 from .scheduler.SchedulerFactory import SchedulerFactory
-from .. import visualization
+from ..save_numpy import save_as_numpy_scalar
 
-import cv2
-from custom.utility.image_converter import torch2numpy
-from custom.utility.reoder import reorder
-
-
-def print_log(print_string, log=None, verbose=True):
-    if verbose:
-        print("{}".format(print_string))
-    if log is not None:
-        log = open(log, 'a')
-        log.write('{}\n'.format(print_string))
-        log.close()
 
 
 class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningModule):
@@ -34,13 +21,11 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
                  num_train) -> None:
         super().__init__()
         self.save_hyperparameters()
-        self.config    = config
-        self.num_train = num_train
-        self.model     = ContrastiveDisentangledSequentialVariationalAutoencoder(**config.model, num_train=num_train)
+        self.config       = config
+        self.num_train    = num_train
+        self.model        = ContrastiveDisentangledSequentialVariationalAutoencoder(**config.model, num_train=num_train)
+        self.summary_dict = None
         # self.summary = torchinfo.summary(self.model, input_size=(131, 8, 3, 64, 64))
-
-        print_log(self.model, None)
-        print_log(vars(config), None)
 
 
     def forward(self, input, **kwargs) -> Any:
@@ -77,10 +62,9 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
     def training_step(self, batch, batch_idx):
         index, data          = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
         # assert len(img_tuple) == 3
+        # print("batch_idx: {} = {}".format(batch_idx, index[0]))
         # import ipdb; ipdb.set_trace()
 
-        # x, label_A, label_D, c_aug, m_aug = reorder(data['images']), data['A_label'], data['D_label'], reorder(data['c_aug']), reorder(data['m_aug'])
-        # x, label_A, label_D, c_aug, m_aug = x.cuda(), label_A.cuda(), label_D.cuda(), c_aug.cuda(), m_aug.cuda()
         x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
 
         results_dict              = self.model.forward(x)     # original
@@ -95,8 +79,18 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
             results_dict_aug_dynamics = results_dict_aug_dynamics,
         )
 
-        # self.save_progress(img_batch, results_dict)
-        self.log("val_loss", loss["loss"])
+        # if self.summary_dict is None:
+        #     for key in loss.keys():
+        #         self.summary_dict[key] = []
+        #     for key in self.summary_dict.keys():
+        #         self.summary_dict[key].append(loss[key])
+        #     save_as_numpy_scalar(loss, self.logger.log_dir)
+        # else:
+        #     for key in self.summary_dict.keys():
+        #         self.summary_dict[key].append(loss[key])
+        #     save_as_numpy_scalar(loss, self.logger.log_dir)
+
+        self.log("index_0", index[0])
         self.log_dict({key: val.item() for key, val in loss.items()}, sync_dist=True)
         return loss['loss']
 
@@ -105,9 +99,6 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
     def validation_step(self, batch, batch_idx):
         index, data          = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
         # assert len(img_tuple) == 3
-
-        # x, label_A, label_D, c_aug, m_aug = reorder(data['images']), data['A_label'], data['D_label'], reorder(data['c_aug']), reorder(data['m_aug'])
-        # x, label_A, label_D, c_aug, m_aug = x.cuda(), label_A.cuda(), label_D.cuda(), c_aug.cuda(), m_aug.cuda()
         x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
 
         results_dict              = self.model.forward(x)     # original

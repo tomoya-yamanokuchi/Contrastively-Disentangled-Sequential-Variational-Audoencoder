@@ -58,6 +58,9 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
             dataset     = self.train,
             batch_size  = self.batch_size,
             shuffle     = True,
+            drop_last   = True,
+            pin_memory  = False,
+            num_workers = 0,
         )
 
     def val_dataloader(self):

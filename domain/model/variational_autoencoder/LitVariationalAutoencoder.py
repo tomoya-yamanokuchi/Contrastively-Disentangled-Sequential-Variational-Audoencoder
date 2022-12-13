@@ -9,7 +9,7 @@ from torch import optim
 from typing import List, Any
 import pytorch_lightning as pl
 from .VariationalAutoencoder import VariationalAutoencoder
-from .. import visualization
+# from .. import visualization
 
 
 class LitVariationalAutoencoder(pl.LightningModule):
@@ -86,10 +86,10 @@ class LitVariationalAutoencoder(pl.LightningModule):
                 fp     = os.path.join(str(p), 'reconstruction_epoch' + str(self.current_epoch)) + '.png',
             )
 
-            p = pathlib.Path(self.logger.log_dir + "/latentn_space"); p.mkdir(parents=True, exist_ok=True)
-            visualization.samples(mu, labels,
-                save_path = os.path.join(str(p), 'latentn_space' + str(self.current_epoch)) + '.png',
-            )
+            # p = pathlib.Path(self.logger.log_dir + "/latentn_space"); p.mkdir(parents=True, exist_ok=True)
+            # visualization.samples(mu, labels,
+            #     save_path = os.path.join(str(p), 'latentn_space' + str(self.current_epoch)) + '.png',
+            # )
 
             recon = self.sample_wide_range(mu[:, 0].min(), mu[:, 0].max(), mu[:, 1].min(), mu[:, 1].max(), current_device)
             p     = pathlib.Path(self.logger.log_dir + "/sample_grid"); p.mkdir(parents=True, exist_ok=True)
