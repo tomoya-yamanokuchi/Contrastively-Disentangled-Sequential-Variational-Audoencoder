@@ -29,7 +29,6 @@ class FullConvFrameEncoder(nn.Module):
 
 
     def forward(self, x: Tensor):
-        print("x.shape = ", x.shape)
         num_batch, step, channle, width, height = x.shape
         x  = x.view(-1, channle, width, height)
         h1 = self.c1(x)

@@ -59,7 +59,7 @@ class MotionPrior(nn.Module):
 
 
 
-    def sample_z(self, batch_size, step, random_sampling=True):
+    def sample(self, batch_size, step, random_sampling=True):
         z_out     = None
         z_means   = None
         z_logvars = None

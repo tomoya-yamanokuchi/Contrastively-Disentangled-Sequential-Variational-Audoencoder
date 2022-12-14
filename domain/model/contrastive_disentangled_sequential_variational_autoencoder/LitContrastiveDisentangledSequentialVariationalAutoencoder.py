@@ -43,6 +43,15 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
     def forward_fixed_motion(self, *args):
         return self.model.forward_fixed_motion(*args)
 
+    def forward_fixed_content(self, *args):
+        return self.model.forward_fixed_content(*args)
+
+    def sample_motion(self, *args):
+        return self.model.motion_prior.sample(*args)
+
+    def sample_content(self, *args):
+        return self.model.content_prior.sample(*args)
+
 
     def configure_optimizers(self):
         optimizer = optim.Adam(

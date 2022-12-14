@@ -11,7 +11,7 @@ from .inference_model.motion_encoder.MotionEncoderFactory import MotionEncoderFa
 from .inference_model.BiLSTMEncoder import BiLSTMEncoder
 from .generative_model.frame_decoder.FrameDecoderFactory import FrameDecoderFactory
 from .generative_model.MotionPrior import MotionPrior
-from .generative_model.ContextPrior import ContextPrior
+from .generative_model.ContentPrior import ContentPrior
 # from .loss.ContrastiveLoss import ContrastiveLoss
 from .loss.loss import contrastive_loss, compute_mi
 from .loss.MutualInformation import MutualInformation
@@ -31,7 +31,7 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
         self.context_encoder    = ContextEncoder(lstm_hidden_dim=network.bi_lstm_encoder.hidden_dim, **network.context_encoder)
         self.motion_encoder     = MotionEncoderFactory().create(lstm_hidden_dim=network.bi_lstm_encoder.hidden_dim, **network.motion_encoder)
         # prior
-        # self.context_prior      = ContextPrior(network.context_encoder.context_dim)
+        self.content_prior      = ContentPrior(network.context_encoder.context_dim)
         self.motion_prior       = MotionPrior(**network.motion_prior)
         # generate
         in_dim_decoder          = network.context_encoder.context_dim + network.motion_encoder.state_dim
@@ -48,6 +48,11 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
         f_mean, f_logvar, f_sample = self.context_encoder(bi_lstm_out)   # both shape = [num_batch, context_dim]
         z_mean, z_logvar, z_sample = self.motion_encoder(bi_lstm_out)    # both shape = [num_batch, step, state_dim]
         return (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample)
+
+
+    def decode(self, z, f):
+        num_batch, step, _ = z.shape
+        return self.frame_decoder(torch.cat((z, f.unsqueeze(1).expand(num_batch, step, -1)), dim=2))
 
 
     def forward(self, img: Tensor, **kwargs) -> List[Tensor]:
@@ -70,12 +75,6 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
             "z_logvar_prior" : z_logvar_prior,
             "x_recon"        : x_recon
         }
-
-
-    def decode(self, z, f):
-        num_batch, step, _ = z.shape
-        x_recon            = self.frame_decoder(torch.cat((z, f.unsqueeze(1).expand(num_batch, step, -1)), dim=2))
-        return x_recon
 
 
     def kl_reverse(self, q, p, q_sample):
@@ -197,26 +196,22 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
 
 
     def forward_fixed_motion_for_classification(self, img):
-        num_batch, step = img.shape[:2]
-        z_mean_prior, z_logvar_prior, _ = self.motion_prior.sample_z(num_batch, step, random_sampling=True)
+        # num_batch, step = img.shape[:2]
+        # z_mean_prior, z_logvar_prior, _ = self.motion_prior.sample_z(num_batch, step, random_sampling=True)
         (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = self.encode(img)
-
-        f_prior = reparameterize(
-            mean            = torch.zeros(f_mean.shape).type_as(f_mean),
-            logvar          = torch.zeros(f_logvar.shape).type_as(f_logvar),
-            random_sampling = True,
-        )
+        f_prior        = reparameterize(torch.zeros(f_mean.shape).cuda(), torch.zeros(f_logvar.shape).cuda())
         recon_x_sample = self.decode(z_sample, f_prior)
         recon_x        = self.decode(z_sample, f_mean)
-
         return recon_x_sample, recon_x
 
 
-
-    def forward_fixed_motion(self, z, f_mean, f_logvar):
-        f_sample = reparameterize(
-            mean            = torch.zeros(f_mean.shape).type_as(f_mean),
-            logvar          = torch.zeros(f_logvar.shape).type_as(f_logvar),
-            random_sampling = True,
-        )
+    def forward_fixed_motion(self, z):
+        num_batch      = z.shape[0]
+        _, _, f_sample = self.content_prior.sample(num_batch)
         return self.decode(z, f_sample)
+
+
+    def forward_fixed_content(self, f, step):
+        num_batch    = f.shape[0]
+        z_mean, _, z_sample = self.motion_prior.sample(num_batch, step)
+        return self.decode(z_mean, f)
