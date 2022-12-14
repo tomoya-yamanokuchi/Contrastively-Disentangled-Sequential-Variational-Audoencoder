@@ -4,6 +4,7 @@ from torchvision.datasets import VisionDataset
 import torch
 import os
 import random
+import pickle
 import numpy as np
 from pathlib import Path
 from typing import List, Tuple, Optional, Callable
@@ -23,14 +24,25 @@ class SpriteJunwenBai_FastLoad(VisionDataset):
             - max:  1.0
     '''
 
-    def __init__(self, train, data, A_label, D_label, c_aug, m_aug):
-        self.data    = data
-        self.A_label = A_label
-        self.D_label = D_label
+    def __init__(self, data_dir: str, train: bool):
+        self.data_dir = data_dir
+        self.train    = train
+        self._load_data()
+
+
+    def _load_data(self):
+        if   self.train: name = "train"
+        else           : name = "test"
+
+        data = pickle.load(open(self.data_dir + '/{}.pkl'.format(name), 'rb'))
+        self.data    = data['X_{}'.format(name)]
+        self.A_label = data['A_{}'.format(name)]
+        self.D_label = data['D_{}'.format(name)]
+        self.c_aug   = data['c_augs_{}'.format(name)]
+        self.m_aug   = data['m_augs_{}'.format(name)]
+        # num of data
         self.N       = self.data.shape[0]
-        self.c_aug   = c_aug
-        self.m_aug   = m_aug
-        self.aug_num = c_aug.shape[1]
+        self.aug_num = self.c_aug.shape[1]
 
 
     def set_seed(self, seed):

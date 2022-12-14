@@ -31,21 +31,17 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
     def forward(self, input, **kwargs) -> Any:
         return self.model.forward(input)
 
+    def encode(self, img):
+        return self.model.encode(img)
 
     def decode(self, z, f):
-        '''
-        input:
-            - z: shape = []
-            - f: shape = []
-        '''
-        # import ipdb; ipdb.set_trace()
+        return self.model.decode(z, f)
 
-        num_batch, step, _ = z.shape
-        # z         = z.view(num_batch, step, -1)
-        # import ipdb; ipdb.set_trace()
-        # f         = f.view(num_batch, step, -1)
-        x_recon   = self.model.frame_decoder(torch.cat((z, f.unsqueeze(1).expand(num_batch, step, -1)), dim=2))
-        return x_recon
+    def forward_fixed_motion_for_classification(self, img):
+        return self.model.forward_fixed_motion_for_classification(img)
+
+    def forward_fixed_motion(self, *args):
+        return self.model.forward_fixed_motion(*args)
 
 
     def configure_optimizers(self):

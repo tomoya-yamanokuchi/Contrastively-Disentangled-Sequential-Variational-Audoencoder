@@ -15,6 +15,7 @@ class LSTMMotionEncoder(nn.Module):
                  **kwargs) -> None:
         super().__init__()
         self.lstm_hidden_dim = lstm_hidden_dim
+        self.state_dim       = state_dim
 
         self.z_rnn    = nn.RNN(self.lstm_hidden_dim * 2, self.lstm_hidden_dim, batch_first=True)
         self.z_mean   = nn.Linear(self.lstm_hidden_dim, state_dim)

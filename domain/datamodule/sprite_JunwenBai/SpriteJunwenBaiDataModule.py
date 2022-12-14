@@ -27,30 +27,20 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
 
 
     def setup(self, stage: Optional[str] = None):
-        data                             = pickle.load(open(self.data_dir + '/data.pkl', 'rb'))
-        X_train, X_test, A_train, A_test = data['X_train'], data['X_test'], data['A_train'], data['A_test']
-        D_train, D_test                  = data['D_train'], data['D_test']
-        c_augs_train, c_augs_test        = data['c_augs_train'], data['c_augs_test']
-        m_augs_train, m_augs_test        = data['m_augs_train'], data['m_augs_test']
-
-        train_data = SpriteJunwenBai(train=True, data = X_train, A_label = A_train,
-                            D_label = D_train, c_aug = c_augs_train, m_aug = m_augs_train)
-        test_data  = SpriteJunwenBai(train=False, data = X_test, A_label = A_test,
-                            D_label = D_test, c_aug = c_augs_test, m_aug = m_augs_test)
-
-        assert len(train_data) + len(test_data) == self.num_dataset
-
-        # Assign train/val datasets for use in dataloaders
         if stage == "fit" or stage is None:
-            self.train = train_data
-            self.val   = test_data
+            data = pickle.load(open(self.data_dir + '/train.pkl', 'rb'))
+            self.train = SpriteJunwenBai(data_dir=self.data_dir, train=True)
+
+            data = pickle.load(open(self.data_dir + '/test.pkl', 'rb'))
+            self.val   = SpriteJunwenBai(data_dir=self.data_dir, train=False)
+            assert self.train.__len__ + self.test.__len__ == self.num_dataset
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test = test_data
+            self.test = SpriteJunwenBai(data_dir=self.data_dir, train=False)
 
         if stage == "predict" or stage is None:
-            self.predict = test_data
+            self.predict = SpriteJunwenBai(data_dir=self.data_dir, train=False)
 
 
     def train_dataloader(self):

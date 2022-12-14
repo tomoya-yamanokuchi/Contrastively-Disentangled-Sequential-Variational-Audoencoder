@@ -12,8 +12,11 @@ cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
 # log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221208211521]"
 log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221210035007]-[remote_3090]-32219"
+log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212525]-[remote_3090]-momo"
+log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-[dl-box]-nene"
+
 # ----------------------------------------------------------------------------------
-model   = "cdsvae_develop"
+model   = "cdsvae4"
 log_dir = "/hdd_mount/logs_cdsvae/{}/".format(model)
 test    = TestModel(
     config_dir  = log_dir + log,
@@ -44,7 +47,7 @@ for index, img_dict in dataloader:
         # import ipdb; ipdb.set_trace()
         img_seq         = img[test_index].unsqueeze(dim=0).to(device)
         return_dict_seq = model(img_seq)
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         x_recon         = model.decode(return_dict_seq["z_mean"], return_dict_seq["f_mean"])
 
         z = return_dict_seq["z_mean"]
@@ -61,7 +64,7 @@ for index, img_dict in dataloader:
             '''
             dynamic info
             '''
-            # z += torch.randn_like(z)
+            z += torch.randn_like(z) * 0.5
             # ========= 232 =============
             # import ipdb; ipdb.set_trace()
             # z[:, :, :3] += torch.randn_like(z[:, :, :3])*2.0
@@ -77,4 +80,4 @@ for index, img_dict in dataloader:
             # z[:, :, 8:12] += torch.randn_like(z[:, :, 8:12])
             # z[:, :, 13:]  += torch.randn_like(z[:, :, 13:])
 
-            f += torch.randn_like(f) * 0.2
+            # f += torch.randn_like(f) * 0.25

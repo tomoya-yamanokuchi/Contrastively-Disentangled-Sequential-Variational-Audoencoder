@@ -56,3 +56,35 @@ class MotionPrior(nn.Module):
             z_t = z_post[:,i,:]
 
         return z_means, z_logvars, z_out
+
+
+
+    def sample_z(self, batch_size, step, random_sampling=True):
+        z_out     = None
+        z_means   = None
+        z_logvars = None
+
+        z_t       = torch.zeros(batch_size, self.state_dim).cuda()
+        h_t_ly1   = torch.zeros(batch_size, self.hidden_dim).cuda()
+        c_t_ly1   = torch.zeros(batch_size, self.hidden_dim).cuda()
+        h_t_ly2   = torch.zeros(batch_size, self.hidden_dim).cuda()
+        c_t_ly2   = torch.zeros(batch_size, self.hidden_dim).cuda()
+
+        for _ in range(step):
+            h_t_ly1, c_t_ly1 = self.z_prior_lstm_ly1(z_t, (h_t_ly1, c_t_ly1))
+            h_t_ly2, c_t_ly2 = self.z_prior_lstm_ly2(h_t_ly1, (h_t_ly2, c_t_ly2))
+
+            z_mean_t         = self.z_prior_mean(h_t_ly2)
+            z_logvar_t       = self.z_prior_logvar(h_t_ly2)
+            z_t              = reparameterize(z_mean_t, z_logvar_t, random_sampling)
+            if z_out is None:
+                # If z_out is none it means z_t is z_1, hence store it in the format [batch_size, 1, z_dim]
+                z_out = z_t.unsqueeze(1)
+                z_means = z_mean_t.unsqueeze(1)
+                z_logvars = z_logvar_t.unsqueeze(1)
+            else:
+                # If z_out is not none, z_t is not the initial z and hence append it to the previous z_ts collected in z_out
+                z_out = torch.cat((z_out, z_t.unsqueeze(1)), dim=1)
+                z_means = torch.cat((z_means, z_mean_t.unsqueeze(1)), dim=1)
+                z_logvars = torch.cat((z_logvars, z_logvar_t.unsqueeze(1)), dim=1)
+        return z_means, z_logvars, z_out

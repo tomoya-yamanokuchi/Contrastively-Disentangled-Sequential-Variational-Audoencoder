@@ -15,6 +15,7 @@ from .generative_model.ContextPrior import ContextPrior
 # from .loss.ContrastiveLoss import ContrastiveLoss
 from .loss.loss import contrastive_loss, compute_mi
 from .loss.MutualInformation import MutualInformation
+from custom import reparameterize
 
 
 class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
@@ -41,21 +42,21 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
         self.mutual_information = MutualInformation(num_train)
 
 
+    def encode(self, img):
+        encoded_frame              = self.frame_encoder(img)             # shape = [num_batch, step, conv_fc_out_dims[-1]]
+        bi_lstm_out                = self.bi_lstm_encoder(encoded_frame)
+        f_mean, f_logvar, f_sample = self.context_encoder(bi_lstm_out)   # both shape = [num_batch, context_dim]
+        z_mean, z_logvar, z_sample = self.motion_encoder(bi_lstm_out)    # both shape = [num_batch, step, state_dim]
+        return (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample)
+
+
     def forward(self, img: Tensor, **kwargs) -> List[Tensor]:
         num_batch, step, channle, width, height = img.shape
-        # import ipdb; ipdb.set_trace()
-        encoded_frame                = self.frame_encoder(img)                    # shape = [num_batch, step, conv_fc_out_dims[-1]]
-        bi_lstm_out                  = self.bi_lstm_encoder(encoded_frame)
-        # posterior
-        f_mean, f_logvar, f_sample   = self.context_encoder(bi_lstm_out)          # both shape = [num_batch, context_dim]
-        z_mean, z_logvar, z_sample   = self.motion_encoder(bi_lstm_out)  # both shape = [num_batch, step, state_dim]
-        # prior
-        # f_mean_prior, f_logvar_prior                 = self.context_prior.dist(f_mean)
-        z_mean_prior, z_logvar_prior, z_sample_prior = self.motion_prior(z_sample)
+        (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = self.encode(img)
+        # f_mean_prior, f_logvar_prior                             = self.context_prior.dist(f_mean)
+        z_mean_prior, z_logvar_prior, z_sample_prior               = self.motion_prior(z_sample)
+        x_recon                                                    = self.decode(z_sample, f_sample)
 
-        # image reconstruction
-        f_sample_expand = f_sample.unsqueeze(1).expand(num_batch, step, -1)
-        x_recon         = self.frame_decoder(torch.cat((z_sample, f_sample_expand), dim=2))
         return  {
             "f_mean"         : f_mean,
             "f_logvar"       : f_logvar,
@@ -72,16 +73,9 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
 
 
     def decode(self, z, f):
-        '''
-        input:
-            - z: shape = []
-            - f: shape = []
-        '''
-        num_batch = 1
-        step      = 1
-        x_recon   = self.frame_decoder(torch.cat((z, f.unsqueeze(1).expand(num_batch, step, -1)), dim=2))
+        num_batch, step, _ = z.shape
+        x_recon            = self.frame_decoder(torch.cat((z, f.unsqueeze(1).expand(num_batch, step, -1)), dim=2))
         return x_recon
-
 
 
     def kl_reverse(self, q, p, q_sample):
@@ -199,3 +193,30 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
             # 'z_logvar/z_logvar.min()'  : results_dict["z_logvar"].min(),
             # 'z_logvar/z_logvar.max()'  : results_dict["z_logvar"].max(),
         }
+
+
+
+    def forward_fixed_motion_for_classification(self, img):
+        num_batch, step = img.shape[:2]
+        z_mean_prior, z_logvar_prior, _ = self.motion_prior.sample_z(num_batch, step, random_sampling=True)
+        (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = self.encode(img)
+
+        f_prior = reparameterize(
+            mean            = torch.zeros(f_mean.shape).type_as(f_mean),
+            logvar          = torch.zeros(f_logvar.shape).type_as(f_logvar),
+            random_sampling = True,
+        )
+        recon_x_sample = self.decode(z_sample, f_prior)
+        recon_x        = self.decode(z_sample, f_mean)
+
+        return recon_x_sample, recon_x
+
+
+
+    def forward_fixed_motion(self, z, f_mean, f_logvar):
+        f_sample = reparameterize(
+            mean            = torch.zeros(f_mean.shape).type_as(f_mean),
+            logvar          = torch.zeros(f_logvar.shape).type_as(f_logvar),
+            random_sampling = True,
+        )
+        return self.decode(z, f_sample)
