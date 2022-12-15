@@ -54,11 +54,32 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size=self.batch_size, shuffle=False)
+        return DataLoader(
+            dataset     = self.val,
+            batch_size  = self.batch_size,
+            shuffle     = True,
+            drop_last   = True,
+            pin_memory  = False,
+            num_workers = 0,
+        )
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=9, shuffle=False)
+        return DataLoader(
+            dataset     = self.test,
+            batch_size  = 128,
+            shuffle     = False,
+            drop_last   = True,
+            pin_memory  = False,
+            num_workers = 0,
+        )
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, shuffle=False)
+        return DataLoader(
+            dataset     = self.predict,
+            batch_size  = 128,
+            shuffle     = False,
+            drop_last   = True,
+            pin_memory  = False,
+            num_workers = 0,
+        )
 

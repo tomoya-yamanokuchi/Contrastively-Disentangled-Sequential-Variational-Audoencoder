@@ -6,9 +6,19 @@ import torch.nn.functional as F
 import argparse
 import os
 import json
-from model import CDSVAE, classifier_Sprite_all
-import utils
+# from model import CDSVAE, classifier_Sprite_all
+# import utils
 import numpy as np
+
+
+# ------------------------------------
+import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
+from domain.model.ModelFactory import ModelFactory
+from domain.classifier.ClassifierJunwenBi.classifier_Sprite_all import classifier_Sprite_all
+from domain.classifier import utils
+from domain.test.TestModel import TestModel
+# ------------------------------------
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr',      default=1.e-3, type=float, help='learning rate')
@@ -51,11 +61,31 @@ def reorder(sequence):
 os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu
 
 
-def main(opt):
+def main(opt, config):
     if opt.model_dir != '':
-        saved_model = torch.load('%s/model%d.pth' % (opt.model_dir, opt.model_epoch))
-        model_dir = opt.model_dir
-        opt.model_dir = model_dir
+        # saved_model = torch.load('%s/model%d.pth' % (opt.model_dir, opt.model_epoch))
+        # model_dir = opt.model_dir
+        # opt.model_dir = model_dir
+
+        # opt.model_dir = config.
+        # ----------------------------------------------------------------------------------
+        model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212525]-[remote_3090]-momo"
+        model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-[dl-box]-nene"
+        # model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212231238]-[melco]-neko"
+        # model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212403]-[melco]-neko"
+        # model = ""
+
+
+        group   = "cdsvae4"
+        log_dir = "/hdd_mount/logs_cdsvae/{}/".format(group)
+        test    = TestModel(
+            config_dir  = log_dir + model,
+            checkpoints = "last.ckpt"
+        )
+        cdsvae      = test.load_model()
+        test_loader = test.load_dataloader()
+        # test_loader = dataloader.tes
+        # ----------------------------------------------------------------------------------
     else:
         raise ValueError('missing checkpoint')
 
@@ -67,12 +97,12 @@ def main(opt):
     print_log('Running parameters:')
     print_log(json.dumps(vars(opt), indent=4, separators=(',', ':')), log)
 
-    if opt.model_dir != '':
-        cdsvae = CDSVAE(opt)
-        if 'model' in saved_model:
-            cdsvae.load_state_dict(saved_model['model'], strict=False)
-        else:
-            cdsvae.load_state_dict(saved_model['ds_vae'].state_dict(), strict=False)
+    # if opt.model_dir != '':
+    #     cdsvae = CDSVAE(opt)
+    #     if 'model' in saved_model:
+    #         cdsvae.load_state_dict(saved_model['model'], strict=False)
+    #     else:
+    #         cdsvae.load_state_dict(saved_model['ds_vae'].state_dict(), strict=False)
 
     # --------- transfer to gpu ------------------------------------
     if torch.cuda.device_count() > 1:
@@ -81,23 +111,23 @@ def main(opt):
     cdsvae = cdsvae.cuda()
     print_log(cdsvae, log)
 
-    # --------- load a dataset ------------------------------------
-    train_data, test_data = utils.load_dataset(opt)
+    # # --------- load a dataset ------------------------------------
+    # train_data, test_data = utils.load_dataset(opt)
 
-    test_loader = DataLoader(test_data,
-                             num_workers=4,
-                             batch_size=opt.batch_size,
-                             shuffle=False,
-                             drop_last=True,
-                             pin_memory=True)
+    # test_loader = DataLoader(test_data,
+    #                          num_workers=4,
+    #                          batch_size=opt.batch_size,
+    #                          shuffle=False,
+    #                          drop_last=True,
+    #                          pin_memory=True)
 
-    opt.g_dim = 128
+    opt.g_dim    = 128
     opt.rnn_size = 256
-    classifier = classifier_Sprite_all(opt)
-    opt.resume = './judges/Sprite/sprite_judge.tar'
-    loaded_dict = torch.load(opt.resume)
+    classifier   = classifier_Sprite_all(opt)
+    opt.resume   = './judges/Sprite/sprite_judge.tar'
+    loaded_dict  = torch.load(opt.resume)
     classifier.load_state_dict(loaded_dict['state_dict'])
-    classifier = classifier.cuda().eval()
+    classifier   = classifier.cuda().eval()
 
     # --------- training loop ------------------------------------
     for epoch in range(opt.niter):
@@ -108,9 +138,13 @@ def main(opt):
         mean_acc0_sample, mean_acc1_sample, mean_acc2_sample, mean_acc3_sample, mean_acc4_sample = 0, 0, 0, 0, 0
         pred1_all, pred2_all, label2_all = list(), list(), list()
         label_gt = list()
-        for i, data in enumerate(test_loader):
-            x, label_A, label_D, c_aug, m_aug = reorder(data['images']), data['A_label'], data['D_label'], reorder(data['c_aug']), reorder(data['m_aug'])
-            x, label_A, label_D, c_aug, m_aug = x.cuda(), label_A.cuda(), label_D.cuda(), c_aug.cuda(), m_aug.cuda()
+        for i, data in test_loader:
+            # x, label_A, label_D, c_aug, m_aug = reorder(data['images']), data['A_label'], data['D_label'], reorder(data['c_aug']), reorder(data['m_aug'])
+            # x, label_A, label_D, c_aug, m_aug = x.cuda(), label_A.cuda(), label_D.cuda(), c_aug.cuda(), m_aug.cuda()
+
+            # import ipdb; ipdb.set_trace()
+            x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
+            label_D = label_D.squeeze(1)
 
             if opt.type_gt == "action":
                 recon_x_sample, recon_x = cdsvae.forward_fixed_motion_for_classification(x)
@@ -154,21 +188,23 @@ def main(opt):
                                                        mean_acc1_sample / len(test_loader)*100, mean_acc2_sample / len(test_loader)*100,
                                                        mean_acc3_sample / len(test_loader)*100, mean_acc4_sample / len(test_loader)*100))
 
-        label2_all = np.hstack(label2_all)
-        label_gt = np.hstack(label_gt)
-        pred1_all = np.vstack(pred1_all)
-        pred2_all = np.vstack(pred2_all)
+        # import ipdb; ipdb.set_trace()
+        label2_all = np.hstack(label2_all)  # label2_all = List[(num_batch,),(num_batch,),...]
+        label_gt   = np.hstack(label_gt)
+        pred1_all  = np.vstack(pred1_all)
+        pred2_all  = np.vstack(pred2_all)
 
-        acc = (label_gt == label2_all).mean()
-        kl  = KL_divergence(pred2_all, pred1_all)
+        # import ipdb; ipdb.set_trace()
+        acc             = (label_gt == label2_all).mean()
+        kl              = KL_divergence(pred2_all, pred1_all)
 
         nSample_per_cls = min([(label_gt==i).sum() for i in np.unique(label_gt)])
-        index = np.hstack([np.nonzero(label_gt == i)[0][:nSample_per_cls] for i in np.unique(label_gt)]).squeeze()
-        pred2_selected = pred2_all[index]
+        index           = np.hstack([np.nonzero(label_gt == i)[0][:nSample_per_cls] for i in np.unique(label_gt)]).squeeze()
+        pred2_selected  = pred2_all[index]
 
-        IS  = inception_score(pred2_selected)
-        H_yx = entropy_Hyx(pred2_selected)
-        H_y = entropy_Hy(pred2_selected)
+        IS              = inception_score(pred2_selected)
+        H_yx            = entropy_Hyx(pred2_selected)
+        H_y             = entropy_Hy(pred2_selected)
 
         print('acc: {:.2f}%, kl: {:.4f}, IS: {:.4f}, H_yx: {:.4f}, H_y: {:.4f}'.format(acc*100, kl, IS, H_yx, H_y))
 
@@ -213,4 +249,11 @@ def print_log(print_string, log=None):
         log.close()
 
 if __name__ == '__main__':
-    main(opt)
+    import hydra
+    from omegaconf import DictConfig, OmegaConf
+    @hydra.main(version_base=None, config_path="../conf", config_name="config_classifier")
+    def get_config(cfg: DictConfig) -> None:
+
+        main(opt, cfg)
+
+    get_config(opt)
