@@ -2,6 +2,7 @@ logs
 summary
 summary_fig
 outputs
+judges
 data/
 lightning_logs/
 *.pyc
