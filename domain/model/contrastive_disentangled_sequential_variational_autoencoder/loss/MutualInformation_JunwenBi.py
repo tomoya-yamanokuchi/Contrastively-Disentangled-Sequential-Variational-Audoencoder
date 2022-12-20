@@ -15,9 +15,9 @@ from custom.visualize.VectorHeatmap import VectorHeatmap
 VectorHeatmap = VectorHeatmap()
 
 
-class MutualInformation(nn.Module):
+class MutualInformation_JunwenBi(nn.Module):
     def __init__(self, num_train: int):
-        super(MutualInformation, self).__init__()
+        super(MutualInformation_JunwenBi, self).__init__()
         self.num_train = num_train
 
 
@@ -67,11 +67,18 @@ class MutualInformation(nn.Module):
                                   z_logvar.transpose(0, 1).view(step, 1, num_batch, dim_z)) # [8, 1, 128, 32]
 
         _logq_fz_tmp = torch.cat((_logq_f_tmp, _logq_z_tmp), dim=3) # [8, 128, 128, 288]
-
+        # import ipdb; ipdb.set_trace()
         logq_f  = (self.logsumexp(_logq_f_tmp.sum(3), dim=2, keepdim=False)  - math.log(num_batch * self.num_train)) # [8, 128]
         logq_z  = (self.logsumexp(_logq_z_tmp.sum(3), dim=2, keepdim=False)  - math.log(num_batch * self.num_train)) # [8, 128]
         logq_fz = (self.logsumexp(_logq_fz_tmp.sum(3), dim=2, keepdim=False) - math.log(num_batch * self.num_train)) # [8, 128]
         # step x num_batch
+
+        # print("logq_f = {:.6f}".format(-logq_f.mean().detach().cpu().numpy()))
+        # print("logq_z = {:.6f}".format(-logq_z.mean().detach().cpu().numpy()))
+        # print("logq_fz = {:.6f}".format(logq_fz.mean().detach().cpu().numpy()))
+        # print(logq_fz.mean())
+
+        # import ipdb; ipdb.set_trace()
         mi_fz = F.relu(logq_fz - logq_f - logq_z).mean()
 
         return mi_fz

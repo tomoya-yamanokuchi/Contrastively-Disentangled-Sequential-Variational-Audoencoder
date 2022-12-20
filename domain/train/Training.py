@@ -42,7 +42,6 @@ class Training:
         print("-------------------")
         print("   seed: ", config.experiment.manual_seed)
         print("-------------------")
-
         data            = DataModuleFactory().create(**config.datamodule)
         lit_model_class = ModelFactory().create(config.model.name)
         lit_model       = lit_model_class(config, num_train=data.num_train)

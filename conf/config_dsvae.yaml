@@ -1,22 +1,14 @@
 defaults:
-  - model    : c-dsvae
-  # - model    : dsvae_valve
-  - raytune  : async_with_optuna
-  - notify   : slack
-
-reload:
-  path:
-
-datamodule:
-  name       : "sprite_jb"
-  data_dir   : "../dataset/Sprite"
-  # name       : "action_norm_valve"
-  # data_dir   : "./data/"
-  batch_size : 128
+  - model     : c-dsvae
+  - raytune   : async_with_optuna
+  - notify    : slack
+  # - datamodule: sprite_JunwenBi
+  - datamodule: sprite_aug
+  # - datamodule: action_norm_valve
 
 logger:
   save_dir         : "logs/"
-  name             : "cdsvae4"
+  name             : "cdsvae6"
   default_hp_metric: False
 
 experiment:
@@ -43,5 +35,8 @@ checkpoint:
   save_last               : True
   # save_on_train_epoch_end : True
   monitor                 : "loss"
+
+reload:
+  path:
 
 memo: ""

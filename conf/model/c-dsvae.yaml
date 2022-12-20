@@ -35,6 +35,10 @@ loss:
     tau      : 0.5
     normalize: True
 
+  mutual_information:
+    name : "JunwenBi"
+    # name : "develop"
+
   weight:
     kld_context          : 1.0
     kld_dynamics         : 1.0

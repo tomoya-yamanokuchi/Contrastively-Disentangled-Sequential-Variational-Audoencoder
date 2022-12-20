@@ -2,18 +2,20 @@ from torchvision import transforms
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from typing import Optional
+from omegaconf import DictConfig
 from .SpriteAugmentation import SpriteAugmentation
 
 
 class SpriteAugmentationDataModule(pl.LightningDataModule):
-    def __init__(self, data_dir: str="./", batch_size: int=128):
+    def __init__(self, config_dataloader: DictConfig, data_dir: str = "./"):
         super().__init__()
-        self.data_dir      = data_dir
-        self.batch_size    = batch_size
-        self.full_num_data = 6687
-        self.num_train     = 5350
-        self.num_valid     = 1337
+        self.config_dataloader = config_dataloader
+        self.data_dir          = data_dir
+        self.full_num_data     = 6687
+        self.num_train         = 5350
+        self.num_valid         = 1337
         assert (self.num_train + self.num_valid) == self.full_num_data
+
 
     def prepare_data(self):
         print("\n\n No implementation for download data \n\n")
@@ -35,15 +37,16 @@ class SpriteAugmentationDataModule(pl.LightningDataModule):
 
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size)
+        return DataLoader(self.train, **self.config_dataloader.train)
+        # return DataLoader(self.val, **self.config_dataloader.except_train)
 
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size=self.batch_size)
+        return DataLoader(self.val, **self.config_dataloader.except_train)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=9)
+        return DataLoader(self.test, **self.config_dataloader.except_train)
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size)
+        return DataLoader(self.predict, **self.config_dataloader.except_train)
 
 

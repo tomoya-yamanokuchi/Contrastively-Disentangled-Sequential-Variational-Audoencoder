@@ -14,8 +14,9 @@ from .generative_model.MotionPrior import MotionPrior
 from .generative_model.ContentPrior import ContentPrior
 # from .loss.ContrastiveLoss import ContrastiveLoss
 from .loss.loss import contrastive_loss, compute_mi
-from .loss.MutualInformation import MutualInformation
 from custom import reparameterize
+from .loss.MutualInformationFactory import MutualInformationFactory
+
 
 
 class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
@@ -39,7 +40,7 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
         # loss
         self.weight             = loss.weight
         self.contrastive_loss   = contrastive_loss(**loss.contrastive_loss)
-        self.mutual_information = MutualInformation(num_train)
+        self.mutual_information = MutualInformationFactory().create(**loss.mutual_information, num_train=num_train)
 
 
     def encode(self, img):
@@ -144,6 +145,10 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
             f_dist = (f_mean, f_logvar, f)
             z_dist = (z_post_mean, z_post_logvar, z_post)
             mi_fz  = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
+            # mi_fz, (Hf, Hz, Hfz), (value0_min_f, value0_max_f, value0_min_z, value0_max_z, value0_min_fz, value0_max_fz), (m_max_f, m_min_f, m_max_z, m_min_z, m_max_fz, m_min_fz) = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
+
+        # print("mi_fz = ", mi_fz.detach().cpu().numpy())
+        # import ipdb; ipdb.set_trace()
 
         loss =  l_recon \
                 + kld_f * self.weight.kld_context \
@@ -151,7 +156,6 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
                 + mi_fz * self.weight.mutual_information_fz \
                 + con_loss_c * self.weight.contrastive_loss_fx \
                 + con_loss_m * self.weight.contrastive_loss_zx
-
 
         return {
             "loss"            : loss,
@@ -162,35 +166,32 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
             "Train/con_loss_m": con_loss_m,
             "Train/mi_fz"     : mi_fz,
 
-            # 'loss'                     : loss,
-            # 'recon_loss'               : recon_loss,
+            # "Entropy/Hf"      : Hf,
+            # "Entropy/Hz"      : Hz,
+            # "Entropy/Hfz"     : Hfz,
 
-            # 'kld/context'              : kld_context,
-            # 'kld/dynamics'             : kld_dynamics,
+            # "value0_minmax/f_min"  :   value0_min_f,
+            # "value0_minmax/f_max"  :   value0_max_f,
+            # "value0_minmax/z_min"  :   value0_min_z,
+            # "value0_minmax/z_max"  :   value0_max_z,
+            # "value0_minmax/fz_min" :   value0_min_fz,
+            # "value0_minmax/fz_max" :   value0_max_fz,
 
-            # 'mutual_information/fx' : contrastive_loss_fx,
-            # 'mutual_information/zx' : contrastive_loss_zx,
-            # 'mutual_information/fz' : mutual_information_fz,
+            # "m_minmax/f_max" : m_max_f,
+            # "m_minmax/f_min" : m_min_f,
+            # "m_minmax/z_max" : m_max_z,
+            # "m_minmax/z_min" : m_min_z,
+            # "m_minmax/fz_max": m_max_fz,
+            # "m_minmax/fz_min": m_min_fz,
 
-            # 'entropy/Hf'               : Hf,
-            # 'entropy/Hz'               : Hz,
-            # 'entropy/Hfz'              : Hfz,
-
-            # 'f_mean/f_mean.mean()'     : results_dict["f_mean"].mean(),
-            # 'f_mean/f_mean.min()'      : results_dict["f_mean"].min(),
-            # 'f_mean/f_mean.max()'      : results_dict["f_mean"].max(),
-
-            # 'z_mean/z_mean.mean()'     : results_dict["z_mean"].mean(),
-            # 'z_mean/z_mean.min()'      : results_dict["z_mean"].min(),
-            # 'z_mean/z_mean.max()'      : results_dict["z_mean"].max(),
-
-            # 'f_logvar/f_logvar.mean()' : results_dict["f_logvar"].mean(),
-            # 'f_logvar/f_logvar.min()'  : results_dict["f_logvar"].min(),
-            # 'f_logvar/f_logvar.max()'  : results_dict["f_logvar"].max(),
-
-            # 'z_logvar/z_logvar.mean()' : results_dict["z_logvar"].mean(),
-            # 'z_logvar/z_logvar.min()'  : results_dict["z_logvar"].min(),
-            # 'z_logvar/z_logvar.max()'  : results_dict["z_logvar"].max(),
+            # "dist_minmax/f_mean_min"       : results_dict["f_mean"].min(),
+            # "dist_minmax/f_mean_max"       : results_dict["f_mean"].max(),
+            # "dist_minmax/f_logvar_min"     : results_dict["f_logvar"].min(),
+            # "dist_minmax/f_logvar_max"     : results_dict["f_logvar"].max(),
+            # "dist_minmax/z_post_mean_min"  : results_dict["z_mean"].min(),
+            # "dist_minmax/z_post_mean_max"  : results_dict["z_mean"].max(),
+            # "dist_minmax/z_post_logvar_min": results_dict["z_logvar"].min(),
+            # "dist_minmax/z_post_logvar_max": results_dict["z_logvar"].max(),
         }
 
 

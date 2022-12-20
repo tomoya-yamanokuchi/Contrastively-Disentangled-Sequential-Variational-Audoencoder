@@ -14,6 +14,21 @@ from .scheduler.SchedulerFactory import SchedulerFactory
 from ..save_numpy import save_as_numpy_scalar
 
 
+# import random
+# def torch_fix_seed(seed=42):
+#     # Python random
+#     random.seed(seed)
+#     # Numpy
+#     np.random.seed(seed)
+#     # Pytorch
+#     torch.manual_seed(seed)
+#     torch.cuda.manual_seed(seed)
+#     torch.backends.cudnn.deterministic = True
+#     torch.use_deterministic_algorithms(True)
+
+# torch_fix_seed()
+
+
 
 class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningModule):
     def __init__(self,
@@ -70,7 +85,11 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
         # print("batch_idx: {} = {}".format(batch_idx, index[0]))
         # import ipdb; ipdb.set_trace()
 
-        x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
+        x           = data['images']
+        # label_A     = data['A_label']
+        # label_D     = data['D_label']
+        c_aug       = data['c_aug']
+        m_aug       = data['m_aug']
 
         results_dict              = self.model.forward(x)     # original
         results_dict_aug_context  = self.model.forward(c_aug) # augment context
@@ -83,18 +102,6 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
             results_dict_aug_context  = results_dict_aug_context,
             results_dict_aug_dynamics = results_dict_aug_dynamics,
         )
-
-        # if self.summary_dict is None:
-        #     for key in loss.keys():
-        #         self.summary_dict[key] = []
-        #     for key in self.summary_dict.keys():
-        #         self.summary_dict[key].append(loss[key])
-        #     save_as_numpy_scalar(loss, self.logger.log_dir)
-        # else:
-        #     for key in self.summary_dict.keys():
-        #         self.summary_dict[key].append(loss[key])
-        #     save_as_numpy_scalar(loss, self.logger.log_dir)
-
         self.log("index_0", index[0])
         self.log_dict({key: val.item() for key, val in loss.items()}, sync_dist=True)
         return loss['loss']
@@ -102,9 +109,12 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
 
 
     def validation_step(self, batch, batch_idx):
-        index, data          = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
-        # assert len(img_tuple) == 3
-        x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
+        index, data = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
+        x           = data['images']
+        # label_A     = data['A_label']
+        # label_D     = data['D_label']
+        c_aug       = data['c_aug']
+        m_aug       = data['m_aug']
 
         results_dict              = self.model.forward(x)     # original
         results_dict_aug_context  = self.model.forward(c_aug) # augment context

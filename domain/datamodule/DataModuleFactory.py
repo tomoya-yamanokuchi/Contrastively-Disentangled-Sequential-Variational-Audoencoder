@@ -10,11 +10,10 @@ from .robel_claw_valve.ActionNormalizedValveDataModule import ActionNormalizedVa
 '''
 
 class DataModuleFactory:
-    def create(self, name: str, **kwargs: str):
-        name = name.lower()
+    def create(self, name: str, **kwargs):
         if   name == "mnist"            : return MNISTDataModule(**kwargs)
         elif name == "sprite"           : return SpriteDataModule(**kwargs)
         elif name == "sprite_aug"       : return SpriteAugmentationDataModule(**kwargs)
-        elif name == "sprite_jb"        : return SpriteJunwenBaiDataModule(**kwargs)
+        elif name == "sprite_JunwenBi"  : return SpriteJunwenBaiDataModule(**kwargs)
         elif name == "action_norm_valve": return ActionNormalizedValveDataModule(**kwargs)
         else: NotImplementedError()

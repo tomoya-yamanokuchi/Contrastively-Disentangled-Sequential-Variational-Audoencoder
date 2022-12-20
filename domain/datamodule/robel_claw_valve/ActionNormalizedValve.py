@@ -4,6 +4,7 @@ import cv2
 import torch
 import numpy as np
 from pprint import pprint
+from torchvision import transforms
 from torch.utils.data import Dataset
 from torchvision.datasets import VisionDataset
 import shelve
@@ -30,23 +31,19 @@ class ActionNormalizedValve(VisionDataset):
             - max:  1.0
     '''
 
-    def __init__(self,
-            img_dir  : str,
-            train    : bool,
-            transform: Optional[Callable] = None,
-        ):
+    def __init__(self, data_dir: str, train: bool):
+        self.data_dir  = data_dir
         self.train     = train
-        self.transform = transform
-        self.img_paths = self._get_img_paths(img_dir)
+        self.img_paths = self._get_img_paths()
         self.num_data  = len(self.img_paths)
 
 
-    def _get_img_paths(self, img_dir):
+    def _get_img_paths(self):
         """
         指定したディレクトリ内の画像ファイルのパス一覧を取得する。
         """
-        if self.train: img_dir = img_dir + "/ActionNormalizedValve/dataset_202210221514_valve2000_train/"
-        else         : img_dir = img_dir + "/ActionNormalizedValve/dataset_20221022153117_valve200_test/"
+        if self.train: img_dir = self.data_dir + "/dataset_202210221514_valve2000_train/"
+        else         : img_dir = self.data_dir + "/dataset_20221022153117_valve200_test/"
         img_dir = Path(img_dir)
         img_paths = [p for p in img_dir.iterdir() if p.suffix == ".db"]
         img_paths = natsorted(img_paths)
@@ -59,7 +56,7 @@ class ActionNormalizedValve(VisionDataset):
         path_without_suffix = str(path.resolve()).split(".")[0]          #; print(path_without_suffix)
         db                  = shelve.open(path_without_suffix, flag='r') # read only
         img_numpy           = db["image"]["canonical"]                   # 複数ステップ分が含まれている(1系列分)
-        # print("min: {} max: {}".format(img_numpy.min(), img_numpy.max())) # max=0, min=255
+        print("min: {} max: {}".format(img_numpy.min(), img_numpy.max())) # max=0, min=255
         # state = db["state"]
         # ctrl  = db["ctrl"]
         step, width, height, channel = img_numpy.shape  # channlの順番に注意（保存形式に依存する）
@@ -73,7 +70,7 @@ class ActionNormalizedValve(VisionDataset):
                 - Normalize が 標準化をしてくれる
                 '''
                 img_torch[t] = self.transform(img_numpy[t])
-        # print("min: {} max: {}".format(img_torch.min(), img_torch.max())) # max=1.0, min=-1.0
+        print("min: {} max: {}".format(img_torch.min(), img_torch.max())) # max=1.0, min=-1.0
         return index, img_torch
 
 
@@ -82,3 +79,11 @@ class ActionNormalizedValve(VisionDataset):
         """
         return len(self.img_paths)
 
+
+    @property
+    def transform(self):
+        return transforms.Compose(
+            [
+                transforms.ToTensor(), # numpy (H x W x C) [0, 255] --> torch (C x H x W) [0.0, 1.0]
+            ]
+        )
