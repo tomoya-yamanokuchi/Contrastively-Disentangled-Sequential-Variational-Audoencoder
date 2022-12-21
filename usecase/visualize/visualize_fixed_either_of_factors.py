@@ -20,8 +20,13 @@ log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212403]-
 log = "[c-dsvae]-[sprite_aug]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220191632]-[remote_3090]-"
 log = "[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220221019]-[melco]-"
 
+# with my logdensity
+# log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072930]-[melco]-'
+log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-'
+
+
 # ----------------------------------------------------------------------------------
-model   = "cdsvae7"
+model   = "cdsvae_datamodule_sprite_JunwenBi"
 log_dir = "/hdd_mount/logs_cdsvae/{}/".format(model)
 test    = TestModel(
     config_dir  = log_dir + log,

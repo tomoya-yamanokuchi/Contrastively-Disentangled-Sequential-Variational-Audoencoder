@@ -9,7 +9,7 @@ import json
 import numpy as np
 
 # ------------------------------------
-import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
+import sys; import pathlib; p=pathlib.Path("./"); sys.path.append(str(p.parent.resolve()))
 from domain.model.ModelFactory import ModelFactory
 from domain.classifier.ClassifierJunwenBi.classifier_Sprite_all import classifier_Sprite_all
 from domain.classifier import utils
@@ -22,6 +22,17 @@ from custom.utility import reoder
 def main(config):
     opt = config.model
 
+    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221051030]-[remote_3090]-ee'
+
+    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221051030]-[remote_3090]-ee'
+
+    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072930]-[melco]-'
+    opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-'
+
+    opt.group = 'cdsvae_datamodule_sprite_JunwenBi'
+
+
+    # ----------------------------------------------------------
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu
 
     if opt.model != '':
@@ -40,7 +51,7 @@ def main(config):
     os.makedirs('%s/plots/' % log_dir, exist_ok=True)
     dtype = torch.cuda.FloatTensor
 
-    print_log('Running parameters:')
+    # print_log('Running parameters:')
     # print_log(json.dumps(vars(opt), indent=4, separators=(',', ':')), log)
 
     # --------- transfer to gpu ------------------------------------
@@ -48,7 +59,7 @@ def main(config):
         print_log("Let's use {} GPUs!".format(torch.cuda.device_count()), log)
         cdsvae = nn.DataParallel(cdsvae)
     cdsvae = cdsvae.cuda()
-    print_log(cdsvae, log)
+    # print_log(cdsvae, log)
 
     classifier   = classifier_Sprite_all(opt)
     loaded_dict  = torch.load(opt.resume)
@@ -58,7 +69,7 @@ def main(config):
     # --------- training loop ------------------------------------
     for epoch in range(opt.niter):
 
-        print("Epoch", epoch)
+        # print("Epoch", epoch)
         cdsvae.eval()
         mean_acc0, mean_acc1, mean_acc2, mean_acc3, mean_acc4 = 0, 0, 0, 0, 0
         mean_acc0_sample, mean_acc1_sample, mean_acc2_sample, mean_acc3_sample, mean_acc4_sample = 0, 0, 0, 0, 0
@@ -107,10 +118,10 @@ def main(config):
             mean_acc3_sample += acc3_sample
             mean_acc4_sample += acc4_sample
 
-        print('Test sample: action_Acc: {:.2f}% skin_Acc: {:.2f}% pant_Acc: {:.2f}% top_Acc: {:.2f}% hair_Acc: {:.2f}% '.format(
-                                                       mean_acc0_sample / len(test_loader)*100,
-                                                       mean_acc1_sample / len(test_loader)*100, mean_acc2_sample / len(test_loader)*100,
-                                                       mean_acc3_sample / len(test_loader)*100, mean_acc4_sample / len(test_loader)*100))
+        # print('Test sample: action_Acc: {:.2f}% skin_Acc: {:.2f}% pant_Acc: {:.2f}% top_Acc: {:.2f}% hair_Acc: {:.2f}% '.format(
+        #                                                mean_acc0_sample / len(test_loader)*100,
+        #                                                mean_acc1_sample / len(test_loader)*100, mean_acc2_sample / len(test_loader)*100,
+        #                                                mean_acc3_sample / len(test_loader)*100, mean_acc4_sample / len(test_loader)*100))
 
         # import ipdb; ipdb.set_trace()
         label2_all = np.hstack(label2_all)  # label2_all = List[(num_batch,),(num_batch,),...]
@@ -130,7 +141,9 @@ def main(config):
         H_yx            = entropy_Hyx(pred2_selected)
         H_y             = entropy_Hy(pred2_selected)
 
-        print('acc: {:.2f}%, kl: {:.4f}, IS: {:.4f}, H_yx: {:.4f}, H_y: {:.4f}'.format(acc*100, kl, IS, H_yx, H_y))
+        # print('acc: {:.2f}%, kl: {:.4f}, IS: {:.4f}, H_yx: {:.4f}, H_y: {:.4f}'.format(acc*100, kl, IS, H_yx, H_y))
+        print('Epoch[{}/{}] : [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.4f}, {:.4f}, {:.4f}]'.format(
+            epoch, opt.niter, acc*100, IS, H_yx, H_y))
 
 
 def entropy_Hy(p_yx, eps=1E-16):
@@ -175,7 +188,7 @@ def print_log(print_string, log=None):
 if __name__ == '__main__':
     import hydra
     from omegaconf import DictConfig, OmegaConf
-    @hydra.main(version_base=None, config_path="../conf", config_name="config_classifier")
+    @hydra.main(version_base=None, config_path="../../conf", config_name="config_classifier")
     def get_config(cfg: DictConfig) -> None:
         main(cfg)
 

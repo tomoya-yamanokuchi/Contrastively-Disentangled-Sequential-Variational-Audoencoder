@@ -3,15 +3,21 @@ from natsort import natsorted
 import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
 from domain.visualize.MultipleTensorbordSummary2PandasDataset import MultipleTensorbordSummary2PandasDataset
 
-name  = "cdsvae4"
+# name  = "cdsvae4"
+name  = "cdsvae_datamodule_sprite_JunwenBi"
 board = MultipleTensorbordSummary2PandasDataset(logs="/hdd_mount/logs_cdsvae/", name=name)
 
-mode = False
+mode = True
 if mode:
+    # model_list = [
+    #     "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221213002108]-[remote_3090]-momo",
+    #     "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212221821]-[melco]-neko",
+    #     "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-[dl-box]-nene"
+    # ]
+
     model_list = [
-        "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221213002108]-[remote_3090]-momo",
-        "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212221821]-[melco]-neko",
-        "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-[dl-box]-nene"
+        "[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-",
+        "[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072930]-[melco]-",
     ]
 else:
     p          = pathlib.Path(board.log_dir)

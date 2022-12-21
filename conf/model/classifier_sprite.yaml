@@ -28,9 +28,14 @@ niter        : 3
 resume  : './judges/Sprite/sprite_judge.tar'
 log_dir : "/hdd_mount/logs_cdsvae"
 
+model :
+group :
 
 # model   : '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220233724]-[melco]-'
 # group   : 'cdsvae7'
 
-model   : '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220233724]-[melco]-'
-group   : 'cdsvae7'
+# model   : '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220233724]-[melco]-'
+# group   : 'cdsvae7'
+
+# model : '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221051030]-[remote_3090]-ee'
+# group : 'cdsvae_datamodule_sprite_JunwenBi'
