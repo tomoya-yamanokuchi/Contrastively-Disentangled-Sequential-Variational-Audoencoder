@@ -12,6 +12,7 @@ command for sending dataset:
 
 class DataModuleFactory:
     def create(self, name: str, **kwargs):
+        # import ipdb; ipdb.set_trace()
         if   name == "mnist"            : return MNISTDataModule(**kwargs)
         elif name == "sprite"           : return SpriteDataModule(**kwargs)
         elif name == "sprite_aug"       : return SpriteAugmentationDataModule(**kwargs)

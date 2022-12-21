@@ -7,6 +7,6 @@ from custom.visualize.VectorHeatmap import VectorHeatmap
 from custom.utility.reparameterize import reparameterize
 from custom.utility.image_converter import torch2numpy
 from custom.utility.normalize import normalize
-
+from custom.utility.create_gif import create_gif
 
 __version__ = '0.1.0'

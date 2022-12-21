@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+import cv2
 import torch
 import torchvision
 import numpy as np
@@ -6,7 +8,8 @@ import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resol
 from torchvision import utils
 from domain.test.TestModel import TestModel
 from custom.utility.image_converter import torch2numpy
-import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
+from custom.utility.create_gif import create_gif
+# cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
 
 
@@ -41,8 +44,8 @@ dataloader = test.load_dataloader()
 num_slice  = 1
 _step      = 0
 
-fixed = "motion"
-# fixed = "content"
+# fixed = "motion"
+fixed = "content"
 # ----------------------------------------------------------------------------------
 for index, img_dict in dataloader:
     img = img_dict["images"]
@@ -58,13 +61,25 @@ for index, img_dict in dataloader:
             (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = model.encode(x)
 
             # 1系列の画像に対してcontentを変化させる
-            for i in range(30):
+
+            images = []
+            for i in range(50):
                 if   fixed == "motion"  : x_sample = model.forward_fixed_motion(z_mean)
                 elif fixed == "content" : x_sample = model.forward_fixed_content(f_mean, step)
 
-                x_sample = x_sample[0]
-                x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
+                _step    = 4
+                x_sample = x_sample[0][_step]
+                x_sample = torchvision.utils.make_grid(x_sample, nrow=1, padding=0, pad_value=0.0, normalize=True)
                 x_sample = torch2numpy(x_sample)
                 x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
-                cv2.imshow("img", x_sample)
-                cv2.waitKey(200)
+                # cv2.imshow("img", x_sample)
+                # cv2.waitKey(200)
+                images.append(x_sample)
+
+            # import ipdb; ipdb.set_trace()
+            create_gif(
+                images   = images,
+                fname    = "./fixed_{}_{}_{}.gif".format(fixed, test_index, m),
+                duration = 500
+            )
+            # sys.exit()

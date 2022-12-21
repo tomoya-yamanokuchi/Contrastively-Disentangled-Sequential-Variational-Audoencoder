@@ -25,7 +25,7 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         if self.sub_name == "origin":
             from .SpriteJunwenBai_FastLoad import SpriteJunwenBai_FastLoad as SpriteJunwenBai
-            from .SpriteJunwenBai_SlowLoad import SpriteJunwenBai_SlowLoad as SpriteJunwenBai
+            # from .SpriteJunwenBai_SlowLoad import SpriteJunwenBai_SlowLoad as SpriteJunwenBai
         elif self.sub_name == "my_aug":
             from .SpriteJunwenBai_with_myaug import SpriteJunwenBai_with_myaug as SpriteJunwenBai
 
