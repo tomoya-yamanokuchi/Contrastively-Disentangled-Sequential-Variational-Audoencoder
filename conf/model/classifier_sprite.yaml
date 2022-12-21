@@ -1,24 +1,36 @@
-name             : classifier_sprite
+lr           : 0.001
+batch_size   : 128
+nEpoch       : 300
+seed         : 1
+evl_interval : 10
+# log_dir      : 'logs_test'
+dataset      : 'Sprite'
+frames       : 8
+channels     : 3
+image_width  : 64
+f_rnn_layers : 1
+rnn_size     : 256
+f_dim        : 256
+z_dim        : 32
+g_dim        : 128
+loss_recon   : 'L2'
+note         : ''
+weight_f     : 1
+weight_z     : 1
+weight_c_aug : 10
+weight_m_aug : 10
+gpu          : '0'
+sche         : 'const'
+model_epoch  : 99
+type_gt      : 'action'
+niter        : 3
 
-network:
-  # Frame Encoder
-  frame_encoder:
-    # name             : "full_conv"
-    in_channels      : 3
-    dim_frame_feature: 128
+resume  : './judges/Sprite/sprite_judge.tar'
+log_dir : "/hdd_mount/logs_cdsvae"
 
-  # Bi-LSTM Encoder
-  bi_lstm_encoder:
-    hidden_dim  : 256
 
-loss:
-  contrastive_loss:
-    tau      : 0.5
-    normalize: True
+# model   : '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220233724]-[melco]-'
+# group   : 'cdsvae7'
 
-  weight:
-    kld_context          : 1.0
-    kld_dynamics         : 1.0
-    contrastive_loss_fx  : 10.0
-    contrastive_loss_zx  : 10.0
-    mutual_information_fz: 1.0
+model   : '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220233724]-[melco]-'
+group   : 'cdsvae7'

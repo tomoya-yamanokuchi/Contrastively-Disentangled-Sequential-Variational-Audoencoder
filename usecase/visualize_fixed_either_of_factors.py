@@ -16,22 +16,25 @@ log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-
 log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212231238]-[melco]-neko"
 log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212403]-[melco]-neko"
 
+# with my augument
+log = "[c-dsvae]-[sprite_aug]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220191632]-[remote_3090]-"
+log = "[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220221019]-[melco]-"
+
 # ----------------------------------------------------------------------------------
-model   = "cdsvae4"
+model   = "cdsvae7"
 log_dir = "/hdd_mount/logs_cdsvae/{}/".format(model)
 test    = TestModel(
     config_dir  = log_dir + log,
     checkpoints = "last.ckpt"
 )
-device     = test.device
 model      = test.load_model()
 dataloader = test.load_dataloader()
 # ----------------------------------------------------------------------------------
 num_slice  = 1
 _step      = 0
 
-# fixed = "motion"
-fixed = "content"
+fixed = "motion"
+# fixed = "content"
 # ----------------------------------------------------------------------------------
 for index, img_dict in dataloader:
     img = img_dict["images"]

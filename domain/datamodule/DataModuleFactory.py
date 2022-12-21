@@ -6,7 +6,8 @@ from .robel_claw_valve.ActionNormalizedValveDataModule import ActionNormalizedVa
 
 
 '''
-データローダー直す
+command for sending dataset:
+    scp -r /home/tomoya-y/workspace/dataset/xxx tomoya-y@xxx.xxx.xxx.xxx:/home/tomoya-y/workspace/dataset/
 '''
 
 class DataModuleFactory:
@@ -17,3 +18,4 @@ class DataModuleFactory:
         elif name == "sprite_JunwenBi"  : return SpriteJunwenBaiDataModule(**kwargs)
         elif name == "action_norm_valve": return ActionNormalizedValveDataModule(**kwargs)
         else: NotImplementedError()
+

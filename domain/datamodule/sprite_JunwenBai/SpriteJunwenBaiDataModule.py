@@ -3,8 +3,10 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from typing import Optional
 from omegaconf import DictConfig
+
 from .SpriteJunwenBai_FastLoad import SpriteJunwenBai_FastLoad as SpriteJunwenBai
 # from .SpriteJunwenBai_SlowLoad import SpriteJunwenBai_SlowLoad as SpriteJunwenBai
+# from .SpriteJunwenBai_with_myaug import SpriteJunwenBai_with_myaug as SpriteJunwenBai
 
 
 

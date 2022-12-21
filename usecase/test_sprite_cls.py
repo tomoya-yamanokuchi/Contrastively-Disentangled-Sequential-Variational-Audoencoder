@@ -6,10 +6,7 @@ import torch.nn.functional as F
 import argparse
 import os
 import json
-# from model import CDSVAE, classifier_Sprite_all
-# import utils
 import numpy as np
-
 
 # ------------------------------------
 import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
@@ -18,91 +15,33 @@ from domain.classifier.ClassifierJunwenBi.classifier_Sprite_all import classifie
 from domain.classifier import utils
 from domain.test.TestModel import TestModel
 # ------------------------------------
+from custom.utility import reoder
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--lr',      default=1.e-3, type=float, help='learning rate')
-parser.add_argument('--batch_size', default=64, type=int, help='batch size')
-parser.add_argument('--nEpoch',   default=300, type=int, help='number of epochs to train for')
-parser.add_argument('--seed',    default=1, type=int, help='manual seed')
-parser.add_argument('--evl_interval',  default=10, type=int, help='evaluate every n epoch')
-parser.add_argument('--log_dir', default='./logs', type=str, help='base directory to save logs')
 
-parser.add_argument('--dataset',   default='Sprite', type=str, help='dataset to train')
-parser.add_argument('--frames',    default=8, type=int, help='number of frames, 8 for sprite, 15 for digits and MUGs')
-parser.add_argument('--channels',  default=3, type=int, help='number of channels in images')
-parser.add_argument('--image_width', default=64, type=int, help='the height / width of the input image to network')
+def main(config):
+    opt = config.model
 
-parser.add_argument('--f_rnn_layers', default=1,  type=int, help='number of layers (content lstm)')
-parser.add_argument('--rnn_size',     default=256,type=int, help='dimensionality of hidden layer')
-parser.add_argument('--f_dim',        default=256,  type=int,help='dim of f')
-parser.add_argument('--z_dim',        default=32,type=int, help='dimensionality of z_t')
-parser.add_argument('--g_dim',        default=128,type=int, help='dimensionality of encoder output vector and decoder input vector')
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu
 
-parser.add_argument('--loss_recon',    default='L2', type=str, help='reconstruction loss: L1, L2')
-parser.add_argument('--note',    default='', type=str, help='appx note')
-parser.add_argument('--weight_f',      default=1,    type=float,help='weighting on KL to prior, content vector')
-parser.add_argument('--weight_z',      default=1,    type=float,help='weighting on KL to prior, motion vector')
-parser.add_argument('--weight_c_aug',      default=1,    type=float,help='weighting on content contrastive loss')
-parser.add_argument('--weight_m_aug',      default=1,    type=float,help='weighting on motion contrastive loss')
-parser.add_argument('--gpu',           default='0',  type=str,help='index of GPU to use')
-parser.add_argument('--sche',          default='cosine', type=str, help='scheduler')
-
-parser.add_argument('--model_epoch', type=int, default=200, help='ckpt epoch')
-parser.add_argument('--model_dir', default='', help='ckpt directory')
-parser.add_argument('--type_gt',  type=str, default='action', help='action, skin, top, pant, hair')
-parser.add_argument('--niter', type=int, default=300, help='number of runs for testing')
-
-opt = parser.parse_args()
-
-def reorder(sequence):
-    return sequence.permute(0,1,4,2,3)
-
-os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu
-
-
-def main(opt, config):
-    if opt.model_dir != '':
-        # saved_model = torch.load('%s/model%d.pth' % (opt.model_dir, opt.model_epoch))
-        # model_dir = opt.model_dir
-        # opt.model_dir = model_dir
-
-        # opt.model_dir = config.
-        # ----------------------------------------------------------------------------------
-        model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212525]-[remote_3090]-momo"
-        model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-[dl-box]-nene"
-        # model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212231238]-[melco]-neko"
-        # model = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212403]-[melco]-neko"
-        # model = ""
-
-
-        group   = "cdsvae4"
-        log_dir = "/hdd_mount/logs_cdsvae/{}/".format(group)
+    if opt.model != '':
+        log_dir = os.path.join(opt.log_dir, opt.group, opt.model)
         test    = TestModel(
-            config_dir  = log_dir + model,
+            config_dir  = log_dir,
             checkpoints = "last.ckpt"
         )
         cdsvae      = test.load_model()
         test_loader = test.load_dataloader()
-        # test_loader = dataloader.tes
-        # ----------------------------------------------------------------------------------
     else:
         raise ValueError('missing checkpoint')
 
-    log = os.path.join(opt.log_dir, 'log.txt')
-    os.makedirs('%s/gen/' % opt.log_dir, exist_ok=True)
-    os.makedirs('%s/plots/' % opt.log_dir, exist_ok=True)
+    log = os.path.join(log_dir, 'log.txt')
+    os.makedirs('%s/gen/' % log_dir, exist_ok=True)
+    os.makedirs('%s/plots/' % log_dir, exist_ok=True)
     dtype = torch.cuda.FloatTensor
 
     print_log('Running parameters:')
-    print_log(json.dumps(vars(opt), indent=4, separators=(',', ':')), log)
-
-    # if opt.model_dir != '':
-    #     cdsvae = CDSVAE(opt)
-    #     if 'model' in saved_model:
-    #         cdsvae.load_state_dict(saved_model['model'], strict=False)
-    #     else:
-    #         cdsvae.load_state_dict(saved_model['ds_vae'].state_dict(), strict=False)
+    # print_log(json.dumps(vars(opt), indent=4, separators=(',', ':')), log)
 
     # --------- transfer to gpu ------------------------------------
     if torch.cuda.device_count() > 1:
@@ -111,20 +50,7 @@ def main(opt, config):
     cdsvae = cdsvae.cuda()
     print_log(cdsvae, log)
 
-    # # --------- load a dataset ------------------------------------
-    # train_data, test_data = utils.load_dataset(opt)
-
-    # test_loader = DataLoader(test_data,
-    #                          num_workers=4,
-    #                          batch_size=opt.batch_size,
-    #                          shuffle=False,
-    #                          drop_last=True,
-    #                          pin_memory=True)
-
-    opt.g_dim    = 128
-    opt.rnn_size = 256
     classifier   = classifier_Sprite_all(opt)
-    opt.resume   = './judges/Sprite/sprite_judge.tar'
     loaded_dict  = torch.load(opt.resume)
     classifier.load_state_dict(loaded_dict['state_dict'])
     classifier   = classifier.cuda().eval()
@@ -139,17 +65,15 @@ def main(opt, config):
         pred1_all, pred2_all, label2_all = list(), list(), list()
         label_gt = list()
         for i, data in test_loader:
-            # x, label_A, label_D, c_aug, m_aug = reorder(data['images']), data['A_label'], data['D_label'], reorder(data['c_aug']), reorder(data['m_aug'])
-            # x, label_A, label_D, c_aug, m_aug = x.cuda(), label_A.cuda(), label_D.cuda(), c_aug.cuda(), m_aug.cuda()
-
-            # import ipdb; ipdb.set_trace()
-            x, label_A, label_D, c_aug, m_aug = data['images'], data['A_label'], data['D_label'], data['c_aug'], data['m_aug']
+            x       = data['images']
+            label_A = data['A_label']
+            label_D = data['D_label']
+            c_aug   = data['c_aug']
+            m_aug   = data['m_aug']
             label_D = label_D.squeeze(1)
 
-            if opt.type_gt == "action":
-                recon_x_sample, recon_x = cdsvae.forward_fixed_motion_for_classification(x)
-            else:
-                recon_x_sample, recon_x = cdsvae.forward_fixed_content_for_classification(x)
+            if opt.type_gt == "action": recon_x_sample, recon_x = cdsvae.forward_fixed_motion_for_classification(x)
+            else:                       recon_x_sample, recon_x = cdsvae.forward_fixed_content_for_classification(x)
 
             with torch.no_grad():
                 pred_action1, pred_skin1, pred_pant1, pred_top1, pred_hair1 = classifier(x)
@@ -253,7 +177,6 @@ if __name__ == '__main__':
     from omegaconf import DictConfig, OmegaConf
     @hydra.main(version_base=None, config_path="../conf", config_name="config_classifier")
     def get_config(cfg: DictConfig) -> None:
+        main(cfg)
 
-        main(opt, cfg)
-
-    get_config(opt)
+    get_config()

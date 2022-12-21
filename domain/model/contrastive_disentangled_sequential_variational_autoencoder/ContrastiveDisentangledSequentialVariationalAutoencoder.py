@@ -215,4 +215,4 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
     def forward_fixed_content(self, f, step):
         num_batch    = f.shape[0]
         z_mean, _, z_sample = self.motion_prior.sample(num_batch, step)
-        return self.decode(z_mean, f)
+        return self.decode(z_sample, f)
