@@ -1,5 +1,6 @@
-name       : "sprite_aug"
-data_dir   : "../dataset/Sprite_lpc"
+name     : "sprite_aug"
+sub_name :
+data_dir : "../dataset/Sprite_lpc"
 
 config_dataloader:
   train:

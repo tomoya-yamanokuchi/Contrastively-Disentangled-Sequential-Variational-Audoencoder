@@ -27,7 +27,10 @@ def main(config):
     # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221051030]-[remote_3090]-ee'
 
     # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072930]-[melco]-'
-    opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-'
+    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-'
+
+    opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221093615]-[remote_3090]-my_aug'
+    opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221093617]-[melco]-my_aug'
 
     opt.group = 'cdsvae_datamodule_sprite_JunwenBi'
 

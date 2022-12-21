@@ -42,6 +42,7 @@ class Training:
         print("------------------------------------")
         print("         seed : ", config.experiment.manual_seed)
         print("   datamodule : ", config.datamodule.name)
+        print("     sub_name : ", config.datamodule.sub_name)
         print("           MI : ", config.model.loss.mutual_information.name)
         print("         memo : ", config.memo)
         print("------------------------------------")

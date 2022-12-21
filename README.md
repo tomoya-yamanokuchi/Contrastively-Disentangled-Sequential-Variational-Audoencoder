@@ -1,1 +1,1 @@
-pytorch_lightning_VAE
+Pytorch-Lightning implementation of [C-DSVAE](https://github.com/JunwenBai/C-DSVAE)

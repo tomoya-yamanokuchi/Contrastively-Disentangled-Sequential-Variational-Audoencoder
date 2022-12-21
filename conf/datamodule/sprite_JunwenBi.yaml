@@ -1,5 +1,7 @@
-name       : "sprite_JunwenBi"
-data_dir   : "../dataset/Sprite"
+name     : "sprite_JunwenBi"
+sub_name : "my_aug"
+data_dir : "../dataset/Sprite"
+
 
 config_dataloader:
   train:
