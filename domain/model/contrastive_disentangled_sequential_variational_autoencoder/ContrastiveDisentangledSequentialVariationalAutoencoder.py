@@ -197,12 +197,11 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
 
 
     def forward_fixed_motion_for_classification(self, img):
-        # num_batch, step = img.shape[:2]
-        # z_mean_prior, z_logvar_prior, _ = self.motion_prior.sample_z(num_batch, step, random_sampling=True)
+        num_batch            = img.shape[0]
         (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = self.encode(img)
-        f_prior        = reparameterize(torch.zeros(f_mean.shape).cuda(), torch.zeros(f_logvar.shape).cuda())
-        recon_x_sample = self.decode(z_sample, f_prior)
-        recon_x        = self.decode(z_sample, f_mean)
+        _, _, f_prior_sample = self.content_prior.sample(num_batch)
+        recon_x_sample       = self.decode(z_sample, f_prior_sample)
+        recon_x              = self.decode(z_sample, f_mean)
         return recon_x_sample, recon_x
 
 

@@ -16,7 +16,8 @@ from ..image_augumentation.ContentAugumentation import ContentAugumentation
 from ..image_augumentation.MotionAugumentation import MotionAugumentation
 from custom.utility.normalize import normalize
 
-class ActionNormalizedValve(VisionDataset):
+
+class ActionNormalizedValve_all_preload(VisionDataset):
     ''' Sprite Dataset
         - sequence
             - train: 2000
@@ -42,6 +43,8 @@ class ActionNormalizedValve(VisionDataset):
         self.max                   = 255
         self.content_augumentation = ContentAugumentation()
         self.motion_augumentation  = MotionAugumentation(min=self.min, max=self.max)
+        self.__all_preload()
+
 
     def _get_img_paths(self):
         """
@@ -56,6 +59,29 @@ class ActionNormalizedValve(VisionDataset):
         return img_paths
 
 
+    def __all_preload(self):
+        self.images = []
+        self.c_aug  = []
+        self.m_aug  = []
+        for path in self.img_paths:
+            path_without_suffix = str(path.resolve()).split(".")[0]          #; print(path_without_suffix)
+            db                  = shelve.open(path_without_suffix, flag='r') # read only
+            img_numpy           = db["image"]["canonical"]                   # 複数ステップ分が含まれている(1系列分)
+
+            # step, width, height, channel = img_numpy.shape                   # channlの順番に注意（保存形式に依存する）
+            # assert channel == 3
+
+            img_torch           = self.to_tensor_image(img_numpy)
+            img_torch           = normalize(x=img_torch, x_min=self.min, x_max=self.max, m=0, M=1)
+            self.images.append(img_torch)
+            self.c_aug.append(self.content_augumentation.augment(img_torch))
+            self.m_aug.append(self.motion_augumentation.augment(img_torch))
+        self.images = torch.stack(self.images, axis=0)
+        self.c_aug  = torch.stack(self.c_aug, axis=0)
+        self.m_aug  = torch.stack(self.m_aug, axis=0)
+
+
+
     def __len__(self):
         """ディレクトリ内の画像ファイルの数を返す。
         """
@@ -63,26 +89,10 @@ class ActionNormalizedValve(VisionDataset):
 
 
     def __getitem__(self, index: int):
-        path                = self.img_paths[index]                      # 絶対パス: Ex.) PosixPath('data/Sprite/lpc-dataset/train/1808.sprite')
-        path_without_suffix = str(path.resolve()).split(".")[0]          #; print(path_without_suffix)
-        db                  = shelve.open(path_without_suffix, flag='r') # read only
-        img_numpy           = db["image"]["canonical"]                   # 複数ステップ分が含まれている(1系列分)
-        # print("[origin] min: {} max: {}".format(img_numpy.min(), img_numpy.max())) # max=0, min=255
-        # state = db["state"]
-        # ctrl  = db["ctrl"]
-        step, width, height, channel = img_numpy.shape                   # channlの順番に注意（保存形式に依存する）
-        assert channel == 3
-
-        data_ancher = self.to_tensor_image(img_numpy)
-        data_ancher = normalize(x=data_ancher, x_min=self.min, x_max=self.max, m=0, M=1)
-
-        # print("[processed] min: {} max: {}".format(data_ancher.min(), data_ancher.max())) # max=1.0, min=-1.0
-        # import ipdb; ipdb.set_trace()
-
         return index, {
-            "images" : data_ancher.cuda(),
-            "c_aug"  : self.content_augumentation.augment(data_ancher).cuda(),
-            "m_aug"  : self.motion_augumentation.augment(data_ancher).cuda(),
+            "images" : self.images[index].cuda(),
+            "c_aug"  : self.c_aug[index].cuda(),
+            "m_aug"  : self.m_aug[index].cuda(),
             "index"  : index,
         }
 

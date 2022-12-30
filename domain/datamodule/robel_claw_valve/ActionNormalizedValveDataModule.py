@@ -2,13 +2,15 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from typing import Optional
 from omegaconf import DictConfig
-from .ActionNormalizedValve import ActionNormalizedValve
 
+# from .ActionNormalizedValve import ActionNormalizedValve
+from .ActionNormalizedValve_all_preload import ActionNormalizedValve_all_preload as ActionNormalizedValve
 
 
 class ActionNormalizedValveDataModule(pl.LightningDataModule):
-    def __init__(self, config_dataloader: DictConfig, data_dir: str = "./"):
+    def __init__(self, config_dataloader: DictConfig, data_dir: str = "./", **kwargs):
         super().__init__()
+        self.sub_name          = kwargs["sub_name"]
         self.config_dataloader = config_dataloader
         self.data_dir          = data_dir
         self.num_dataset       = 2000

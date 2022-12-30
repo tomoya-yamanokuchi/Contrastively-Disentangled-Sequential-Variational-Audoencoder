@@ -5,6 +5,16 @@ from custom import normalize
 
 
 class MotionAugumentation:
+    '''
+    - keep  : dynamics
+    - change: context
+
+    combination of
+        - (cropping)
+        - color distortion
+        - Gaussian blur
+        - reshaping
+    '''
     def __init__(self, min: float, max: float):
         self.min = Tensor([min])
         self.max = Tensor([max])
@@ -14,26 +24,18 @@ class MotionAugumentation:
 
     def augment(self, img: Tensor):
         '''
-        - keep  : dynamics
-        - change: context
-
-        combination of
-            - (cropping)
-            - color distortion
-            - Gaussian blur
-            - reshaping
+        image is a tensor with value range in [0, 1].
         '''
-        img = normalize(img, x_min=self.min, x_max=self.max, m=0, M=1) # [self.min, self.max] to [0, 1]
-        # -----------------------------------------------------------------
+        assert (img.min() >= 0.0) and (img.max() <= 1.0)
         img = self.transform_color_dist(img)
         img = torch.cat([self.transform_GaussianBlur(_img) for _img in torch.split(img, 1, 0)], dim=0)
-        # -----------------------------------------------------------------
-        img = normalize(img, x_min=0, x_max=1, m=self.min, M=self.max) # [0, 1] to [self.min, self.max]
         return img
 
 
     def get_transform_color_distortion(self, s=1.0):
-        # s is the strength of color distortion.
+        '''
+        - s is the strength of color distortion.
+        '''
         color_jitter = transforms.ColorJitter(
             brightness = 0.8*s,
             contrast   = 0.8*s,

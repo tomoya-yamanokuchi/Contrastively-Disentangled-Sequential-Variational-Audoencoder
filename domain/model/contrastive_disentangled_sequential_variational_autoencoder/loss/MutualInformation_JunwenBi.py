@@ -46,32 +46,38 @@ class MutualInformation_JunwenBi(nn.Module):
     #     return -0.5 * (tmp * tmp + 2 * logsigma + c)
 
 
-    def log_density(self, sample, mean, logvar):
+    def log_density(self, mean, logvar, sample):
         c          = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
-        logdensity = -0.5 * (c + logvar + ((sample - mean)**2 / torch.exp(logvar)))
-        return logdensity
+        # logdensity =
+        return -0.5 * (c + logvar + ((sample - mean)**2 / torch.exp(logvar)))
 
 
 
     def forward(self, f_dist, z_dist):
         assert type(f_dist) == tuple
         assert type(z_dist) == tuple
+        '''
         f_mean, f_logvar, f_sample = f_dist
         z_mean, z_logvar, z_sample = z_dist
+        '''
 
-        num_batch, step, dim_z = z_mean.shape
-        num_batch, dim_f       = f_mean.shape
+        num_batch, step, dim_z = z_dist[0].shape
+        num_batch, dim_f       = f_dist[0].shape
 
         # compute log q(z) ~= log 1/(NM) sum_m=1^M q(z|x_m) = - log(MN) + logsumexp_m(q(z|x_m))
         # num_batch x num_batch x dim_f
-        _logq_f_tmp = self.log_density(f_sample.unsqueeze(0).repeat(step, 1, 1).view(step, num_batch, 1, dim_f), # [8, 128, 1, 256]
-                                  f_mean.unsqueeze(0).repeat(step, 1, 1).view(step, 1, num_batch, dim_f), # [8, 1, 128, 256]
-                                  f_logvar.unsqueeze(0).repeat(step, 1, 1).view(step, 1, num_batch, dim_f)) # [8, 1, 128, 256]
+        _logq_f_tmp = self.log_density(
+            mean   = f_dist[0].unsqueeze(0).repeat(step, 1, 1).view(step, 1, num_batch, dim_f), # [8, 1, 128, 256]
+            logvar = f_dist[1].unsqueeze(0).repeat(step, 1, 1).view(step, 1, num_batch, dim_f), # [8, 1, 128, 256]
+            sample = f_dist[2].unsqueeze(0).repeat(step, 1, 1).view(step, num_batch, 1, dim_f), # [8, 128, 1, 256]
+        )
 
         # step x num_batch x num_batch x dim_f
-        _logq_z_tmp = self.log_density(z_sample.transpose(0, 1).view(step, num_batch, 1, dim_z), # [8, 128, 1, 32]
-                                  z_mean.transpose(0, 1).view(step, 1, num_batch, dim_z), # [8, 1, 128, 32]
-                                  z_logvar.transpose(0, 1).view(step, 1, num_batch, dim_z)) # [8, 1, 128, 32]
+        _logq_z_tmp = self.log_density(
+            mean   = z_dist[0].transpose(0, 1).view(step, 1, num_batch, dim_z), # [8, 1, 128, 32]
+            logvar = z_dist[1].transpose(0, 1).view(step, 1, num_batch, dim_z), # [8, 1, 128, 32]
+            sample = z_dist[2].transpose(0, 1).view(step, num_batch, 1, dim_z), # [8, 128, 1, 32]
+        )
 
         _logq_fz_tmp = torch.cat((_logq_f_tmp, _logq_z_tmp), dim=3) # [8, 128, 128, 288]
         # import ipdb; ipdb.set_trace()

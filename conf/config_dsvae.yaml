@@ -2,13 +2,13 @@ defaults:
   - model     : c-dsvae
   - raytune   : async_with_optuna
   - notify    : slack
-  - datamodule: sprite_JunwenBi
+  # - datamodule: sprite_JunwenBi
   # - datamodule: sprite_aug
-  # - datamodule: action_norm_valve
+  - datamodule: action_norm_valve
 
 logger:
   save_dir         : "logs/"
-  name             : "cdsvae_datamodule_sprite_JunwenBi"
+  name             : "cdsvae_action_norm_valve"
   default_hp_metric: False
 
 experiment:
@@ -17,7 +17,7 @@ experiment:
 
 trainer:
   gpus                : [0]
-  max_epochs          : 100
+  max_epochs          : 500
   enable_progress_bar : True
   deterministic       : False
   log_every_n_steps   : 1

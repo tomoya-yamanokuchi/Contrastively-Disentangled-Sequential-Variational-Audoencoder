@@ -1,5 +1,7 @@
-name       : "action_norm_valve"
-data_dir   : "../dataset/ActionNormalizedValve"
+name     : "action_norm_valve"
+sub_name :
+data_dir : "../dataset/ActionNormalizedValve"
+
 
 config_dataloader:
   train:

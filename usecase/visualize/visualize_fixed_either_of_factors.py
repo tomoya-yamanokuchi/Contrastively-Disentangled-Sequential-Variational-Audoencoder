@@ -27,9 +27,15 @@ log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[2022122107
 # with my logdensity & augumentation
 log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221093617]-[melco]-my_aug'
 
+# Valve'
+log = '[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221142802]-[melco]-'
+log = '[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[500epoch]-[20221222003141]-[remote_3090]-kkk'
+
 
 # ----------------------------------------------------------------------------------
-model   = "cdsvae_datamodule_sprite_JunwenBi"
+# model   = "cdsvae_datamodule_sprite_JunwenBi"
+model   = "cdsvae_action_norm_valve"
+
 log_dir = "/hdd_mount/logs_cdsvae/{}/".format(model)
 test    = TestModel(
     config_dir  = log_dir + log,
@@ -57,14 +63,26 @@ for index, img_dict in dataloader:
             x = img[m].unsqueeze(0)
             (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = model.encode(x)
 
-            # 1系列の画像に対してcontentを変化させる
+            # 1系列の画像に対して変化させる
             for i in range(30):
-                if   fixed == "motion"  : x_sample = model.forward_fixed_motion(z_mean)
-                elif fixed == "content" : x_sample = model.forward_fixed_content(f_mean, step)
+            # for i in range(1):
+                if fixed == "motion"  :
+                    x_sample = model.forward_fixed_motion(z_mean)
+                    # x_sample = model.decode(z_mean, f_mean)
+                    x_sample = x_sample[0][::4]
+                    x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
+                    x_sample = torch2numpy(x_sample)
+                    x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
+                    cv2.imshow("img", x_sample)
+                    cv2.waitKey(200)
 
-                x_sample = x_sample[0]
-                x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
-                x_sample = torch2numpy(x_sample)
-                x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
-                cv2.imshow("img", x_sample)
-                cv2.waitKey(200)
+                elif fixed == "content" :
+                    x_sample = model.forward_fixed_content(f_mean, step)
+                    x_sample = x_sample[0]
+                    # import ipdb; ipdb.set_trace()
+                    for t in range(step):
+                        _x = torchvision.utils.make_grid(x_sample[t], nrow=1, padding=0, pad_value=0.0, normalize=True)
+                        _x = torch2numpy(_x)
+                        _x = cv2.cvtColor(_x, cv2.COLOR_RGB2BGR)
+                        cv2.imshow("img", _x)
+                        cv2.waitKey(100)

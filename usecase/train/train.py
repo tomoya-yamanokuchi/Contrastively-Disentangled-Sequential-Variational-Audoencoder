@@ -6,8 +6,6 @@ from domain.callbacks.CallbackTrainingTime import CallbackTrainingTime
 
 
 
-
-
 # config_name = "config"
 config_name = "config_dsvae"
 
