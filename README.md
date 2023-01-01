@@ -1,9 +1,9 @@
 Overview of this repository
 -----------------------
-Pytorch-lightning implementation of C-DSVAE with docker environment.
+Pytorch-lightning implementation of [C-DSVAE](https://github.com/JunwenBai/C-DSVAE) with docker environment.
 
 
-Main procedure
+Main procedure for running the training code
 -----------------------
 ```
 $ mkdir ~/workspace
@@ -12,6 +12,7 @@ $ git clone https://github.com/tomoya-yamanokuchi/Contrastively-Disentangled-Seq
 $ cd Contrastively-Disentangled-Sequential-Variational-Audoencoder
 $ sh build.sh
 $ sh run.sh
+
 --- docker container ---
 $ cd /home/$USER/workspace/Contrastively-Disentangled-Sequential-Variational-Audoencoder/
 $

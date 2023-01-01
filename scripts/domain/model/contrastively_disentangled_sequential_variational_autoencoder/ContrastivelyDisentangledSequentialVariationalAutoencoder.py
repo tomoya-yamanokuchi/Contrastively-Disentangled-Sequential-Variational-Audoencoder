@@ -4,7 +4,6 @@ from torch import Tensor
 from typing import List
 from torch.nn import functional as F
 from omegaconf.omegaconf import OmegaConf
-
 from .inference_model.frame_encoder.FrameEncoderFactory import FrameEncoderFactory
 from .inference_model.ContextEncoder import ContextEncoder
 from .inference_model.motion_encoder.MotionEncoderFactory import MotionEncoderFactory
@@ -12,14 +11,12 @@ from .inference_model.BiLSTMEncoder import BiLSTMEncoder
 from .generative_model.frame_decoder.FrameDecoderFactory import FrameDecoderFactory
 from .generative_model.MotionPrior import MotionPrior
 from .generative_model.ContentPrior import ContentPrior
-# from .loss.ContrastiveLoss import ContrastiveLoss
 from .loss.loss import contrastive_loss, compute_mi
-from custom import reparameterize
 from .loss.MutualInformationFactory import MutualInformationFactory
 
 
 
-class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
+class ContrastivelyDisentangledSequentialVariationalAutoencoder(nn.Module):
     def __init__(self,
                  network    : OmegaConf,
                  loss       : OmegaConf,
@@ -57,18 +54,14 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
 
 
     def forward(self, img: Tensor, **kwargs) -> List[Tensor]:
-        num_batch, step, channle, width, height = img.shape
+        # num_batch, step, channle, width, height = img.shape
         (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = self.encode(img)
-        # f_mean_prior, f_logvar_prior                             = self.context_prior.dist(f_mean)
         z_mean_prior, z_logvar_prior, z_sample_prior               = self.motion_prior(z_sample)
         x_recon                                                    = self.decode(z_sample, f_sample)
-
         return  {
             "f_mean"         : f_mean,
             "f_logvar"       : f_logvar,
             "f_sample"       : f_sample,
-            # "f_mean_prior"   : f_mean_prior,
-            # "f_logvar_prior" : f_logvar_prior,
             "z_mean"         : z_mean,
             "z_logvar"       : z_logvar,
             "z_sample"       : z_sample,
@@ -76,17 +69,6 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
             "z_logvar_prior" : z_logvar_prior,
             "x_recon"        : x_recon
         }
-
-
-    def kl_reverse(self, q, p, q_sample):
-        kl = (q.log_prob(q_sample) - p.log_prob(q_sample))
-        kl = kl.sum()
-        return kl
-
-
-    def define_normal_distribution(self, mean, logvar):
-        std = torch.exp(0.5 * logvar)
-        return torch.distributions.Normal(mean, std)
 
 
     def loss_function(self,
@@ -106,49 +88,32 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
         z_prior_mean   = results_dict["z_mean_prior"]
         z_prior_logvar = results_dict["z_logvar_prior"]
         recon_x        = results_dict["x_recon"]
+        f_mean_c       = results_dict_aug_context["f_mean"]
+        z_post_mean_m  = results_dict_aug_dynamics["z_mean"]
 
-        f_mean_c      = results_dict_aug_context["f_mean"]
-        z_post_mean_m = results_dict_aug_dynamics["z_mean"]
+        batch_size = z_post_mean.size(0)
 
-        batch_size, n_frame, z_dim = z_post_mean.size()
+        l_recon  = F.mse_loss(recon_x, x, reduction='sum')
 
-        mi_xs  = compute_mi(f, (f_mean, f_logvar))
-        n_bs   = z_post.shape[0]
-
-        mi_xzs = [compute_mi(z_post_t, (z_post_mean_t, z_post_logvar_t)) \
-                    for z_post_t, z_post_mean_t, z_post_logvar_t in \
-                    zip(z_post.permute(1,0,2), z_post_mean.permute(1,0,2), z_post_logvar.permute(1,0,2))]
-        mi_xz  = torch.stack(mi_xzs).sum()
-
-        # if opt.loss_recon == 'L2': # True branch
-        l_recon = F.mse_loss(recon_x, x, reduction='sum')
-        # else:
-            # l_recon = torch.abs(recon_x - x).sum()
-
-        f_mean   = f_mean.view((-1, f_mean.shape[-1])) # [128, 256]
-        f_logvar = f_logvar.view((-1, f_logvar.shape[-1])) # [128, 256]
+        f_mean   = f_mean.view((-1, f_mean.shape[-1]))
+        f_logvar = f_logvar.view((-1, f_logvar.shape[-1]))
         kld_f    = -0.5 * torch.sum(1 + f_logvar - torch.pow(f_mean,2) - torch.exp(f_logvar))
 
-        z_post_var  = torch.exp(z_post_logvar) # [128, 8, 32]
-        z_prior_var = torch.exp(z_prior_logvar) # [128, 8, 32]
+        z_post_var  = torch.exp(z_post_logvar)
+        z_prior_var = torch.exp(z_prior_logvar)
         kld_z       = 0.5 * torch.sum(z_prior_logvar - z_post_logvar +
                                 ((z_post_var + torch.pow(z_post_mean - z_prior_mean, 2)) / z_prior_var) - 1)
 
-        l_recon, kld_f, kld_z = l_recon / batch_size, kld_f / batch_size, kld_z / batch_size
+        l_recon = l_recon / batch_size
+        kld_f   =   kld_f / batch_size
+        kld_z   =   kld_z / batch_size
 
         con_loss_c = self.contrastive_loss(f_mean, f_mean_c)
         con_loss_m = self.contrastive_loss(z_post_mean.view(batch_size, -1), z_post_mean_m.view(batch_size, -1))
 
-        # calculate the mutual infomation of f and z
-        mi_fz = torch.zeros((1)).cuda()
-        if True: # 0.1
-            f_dist = (f_mean, f_logvar, f)
-            z_dist = (z_post_mean, z_post_logvar, z_post)
-            mi_fz  = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
-            # mi_fz, (Hf, Hz, Hfz), (value0_min_f, value0_max_f, value0_min_z, value0_max_z, value0_min_fz, value0_max_fz), (m_max_f, m_min_f, m_max_z, m_min_z, m_max_fz, m_min_fz) = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
-
-        # print("mi_fz = ", mi_fz.detach().cpu().numpy())
-        # import ipdb; ipdb.set_trace()
+        f_dist = (f_mean, f_logvar, f)
+        z_dist = (z_post_mean, z_post_logvar, z_post)
+        mi_fz  = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
 
         loss =  l_recon \
                 + kld_f * self.weight.kld_context \
@@ -165,35 +130,7 @@ class ContrastiveDisentangledSequentialVariationalAutoencoder(nn.Module):
             "Train/con_loss_c": con_loss_c,
             "Train/con_loss_m": con_loss_m,
             "Train/mi_fz"     : mi_fz,
-
-            # "Entropy/Hf"      : Hf,
-            # "Entropy/Hz"      : Hz,
-            # "Entropy/Hfz"     : Hfz,
-
-            # "value0_minmax/f_min"  :   value0_min_f,
-            # "value0_minmax/f_max"  :   value0_max_f,
-            # "value0_minmax/z_min"  :   value0_min_z,
-            # "value0_minmax/z_max"  :   value0_max_z,
-            # "value0_minmax/fz_min" :   value0_min_fz,
-            # "value0_minmax/fz_max" :   value0_max_fz,
-
-            # "m_minmax/f_max" : m_max_f,
-            # "m_minmax/f_min" : m_min_f,
-            # "m_minmax/z_max" : m_max_z,
-            # "m_minmax/z_min" : m_min_z,
-            # "m_minmax/fz_max": m_max_fz,
-            # "m_minmax/fz_min": m_min_fz,
-
-            # "dist_minmax/f_mean_min"       : results_dict["f_mean"].min(),
-            # "dist_minmax/f_mean_max"       : results_dict["f_mean"].max(),
-            # "dist_minmax/f_logvar_min"     : results_dict["f_logvar"].min(),
-            # "dist_minmax/f_logvar_max"     : results_dict["f_logvar"].max(),
-            # "dist_minmax/z_post_mean_min"  : results_dict["z_mean"].min(),
-            # "dist_minmax/z_post_mean_max"  : results_dict["z_mean"].max(),
-            # "dist_minmax/z_post_logvar_min": results_dict["z_logvar"].min(),
-            # "dist_minmax/z_post_logvar_max": results_dict["z_logvar"].max(),
         }
-
 
 
     def forward_fixed_motion_for_classification(self, img):

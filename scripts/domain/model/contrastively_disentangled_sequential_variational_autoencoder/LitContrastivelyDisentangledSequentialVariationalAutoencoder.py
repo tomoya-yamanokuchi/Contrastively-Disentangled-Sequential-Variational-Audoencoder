@@ -1,19 +1,16 @@
 import os
-import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
-import numpy as np
-import json
-from pprint import pprint
+import pathlib
 import torch
 from torch import optim
 from torchvision import utils
-from torch import Tensor
 from typing import List, Any
 import pytorch_lightning as pl
-from .ContrastiveDisentangledSequentialVariationalAutoencoder import ContrastiveDisentangledSequentialVariationalAutoencoder
+from .ContrastivelyDisentangledSequentialVariationalAutoencoder import ContrastivelyDisentangledSequentialVariationalAutoencoder
 from .scheduler.SchedulerFactory import SchedulerFactory
-from ..save_numpy import save_as_numpy_scalar
 
-
+'''
+    setting to fix random seed
+'''
 # import random
 # def torch_fix_seed(seed=42):
 #     # Python random
@@ -25,12 +22,11 @@ from ..save_numpy import save_as_numpy_scalar
 #     torch.cuda.manual_seed(seed)
 #     torch.backends.cudnn.deterministic = True
 #     torch.use_deterministic_algorithms(True)
-
 # torch_fix_seed()
 
 
 
-class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningModule):
+class LitContrastivelyDisentangledSequentialVariationalAutoencoder(pl.LightningModule):
     def __init__(self,
                  config,
                  num_train) -> None:
@@ -38,9 +34,8 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
         self.save_hyperparameters()
         self.config       = config
         self.num_train    = num_train
-        self.model        = ContrastiveDisentangledSequentialVariationalAutoencoder(**config.model, num_train=num_train)
+        self.model        = ContrastivelyDisentangledSequentialVariationalAutoencoder(**config.model, num_train=num_train)
         self.summary_dict = None
-        # self.summary = torchinfo.summary(self.model, input_size=(131, 8, 3, 64, 64))
 
 
     def forward(self, input, **kwargs) -> Any:
@@ -80,20 +75,14 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
 
 
     def training_step(self, batch, batch_idx):
-        index, data          = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
-        # assert len(img_tuple) == 3
-        # print("batch_idx: {} = {}".format(batch_idx, index[0]))
-        # import ipdb; ipdb.set_trace()
-
+        index, data = batch
         x           = data['images']
-        # label_A     = data['A_label']
-        # label_D     = data['D_label']
         c_aug       = data['c_aug']
         m_aug       = data['m_aug']
 
-        results_dict              = self.model.forward(x)     # original
-        results_dict_aug_context  = self.model.forward(c_aug) # augment context
-        results_dict_aug_dynamics = self.model.forward(m_aug) # augment dynamics
+        results_dict              = self.model.forward(x)
+        results_dict_aug_context  = self.model.forward(c_aug)
+        results_dict_aug_dynamics = self.model.forward(m_aug)
 
         loss = self.model.loss_function(
             x                         = x,
@@ -107,18 +96,15 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
         return loss['loss']
 
 
-
     def validation_step(self, batch, batch_idx):
-        index, data = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
+        index, data = batch
         x           = data['images']
-        # label_A     = data['A_label']
-        # label_D     = data['D_label']
         c_aug       = data['c_aug']
         m_aug       = data['m_aug']
 
-        results_dict              = self.model.forward(x)     # original
-        results_dict_aug_context  = self.model.forward(c_aug) # augment context
-        results_dict_aug_dynamics = self.model.forward(m_aug) # augment dynamics
+        results_dict              = self.model.forward(x)
+        results_dict_aug_context  = self.model.forward(c_aug)
+        results_dict_aug_dynamics = self.model.forward(m_aug)
 
         loss = self.model.loss_function(
             x                         = x,
@@ -130,18 +116,17 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
         self.log("val_loss", loss["loss"])
         if batch_idx == 0:
             self.save_progress(
-                # *img_tuple,
                 *(x, c_aug, m_aug),
                 results_dict,
             )
 
 
     def save_progress(self,
-                      img_batch,
-                      img_aug_context,
-                      img_aug_dynamics,
-                      results_dict: dict,
-                      name_tag: str=""):
+                img_batch,
+                img_aug_context,
+                img_aug_dynamics,
+                results_dict: dict,
+                name_tag: str=""):
 
         if pathlib.Path(self.logger.log_dir).exists():
             p = pathlib.Path(self.logger.log_dir + "/reconstruction"); p.mkdir(parents=True, exist_ok=True)
@@ -163,14 +148,11 @@ class LitContrastiveDisentangledSequentialVariationalAutoencoder(pl.LightningMod
             print(" [  images ] min. max = [{}, {}]".format(   images[1].min(),    images[1].max()))
             print("---------------------------------------\n\n")
 
-            # save input and reconstructed images
             '''
                 Plese check if range of img is [0.0, 1.0].
                 Because utils.save_image() assums that tensor image is in range [0.0, 1.0] internally.
             '''
-            # import ipdb; ipdb.set_trace()
             utils.save_image(
-                # tensor = torch.cat(images, dim=2),
                 tensor = torch.cat(torch.chunk(torch.cat(images, dim=2), chunks=3, dim=-1), dim=1),
                 fp     = os.path.join(str(p), 'reconstruction_epoch' + str(self.current_epoch)) + name_tag + '.png',
             )

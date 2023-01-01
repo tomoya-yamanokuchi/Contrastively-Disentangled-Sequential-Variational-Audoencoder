@@ -1,14 +1,11 @@
 defaults:
   - model     : c-dsvae
-  - raytune   : async_with_optuna
-  - notify    : slack
-  # - datamodule: sprite_JunwenBi
+  - datamodule: sprite_JunwenBi
   # - datamodule: sprite_aug
-  - datamodule: action_norm_valve
 
 logger:
   save_dir         : "logs/"
-  name             : "cdsvae_action_norm_valve"
+  name             : "cdsvae_sprite"
   default_hp_metric: False
 
 experiment:
@@ -33,7 +30,6 @@ checkpoint:
   every_n_epochs          : 50
   save_top_k              : -1
   save_last               : True
-  # save_on_train_epoch_end : True
   monitor                 : "loss"
 
 reload:
