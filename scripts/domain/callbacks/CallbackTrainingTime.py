@@ -1,6 +1,7 @@
 import time
 from pytorch_lightning.callbacks import Callback
 
+
 class CallbackTrainingTime(Callback):
     def on_train_epoch_start(self, trainer, pl_module):
         self.time_epoch_start = time.time()

@@ -1,5 +1,5 @@
 --------------------------------------------------------
-    1. Litコードの中にランダムシード固定設定を追加
+	1. add random seed settings into Lit Code
 --------------------------------------------------------
 import random
 def torch_fix_seed(seed=42):
@@ -20,7 +20,7 @@ torch_fix_seed()
 
 
 --------------------------------------------------------
-    2. configの中の experiment.manual_seed を与える
+	2. set experiment.manual_seed in config
 --------------------------------------------------------
 e.g.)
 experiment:
@@ -28,16 +28,16 @@ experiment:
 
 
 --------------------------------------------------------
-    3. configの中のtrainer.deterministicをTrueにする
-    　（pytorch lightning のために必要）
+	3. set trainer.deterministic as True in config
+		(for pytorch lightning)
 --------------------------------------------------------
 trainer:
   deterministic       : True
 
 
 --------------------------------------------------------
-    4. terminal で 環境変数を設定
-    　 (RNN, LSTMを決定的にするために必要)
+	4. set environmental variavle in terminal
+		(to make RNN/LSTM deterministic)
 --------------------------------------------------------
 export CUBLAS_WORKSPACE_CONFIG=:16:8
-（もしくは CUBLAS_WORKSPACE_CONFIG=:4096:2）
+(or export CUBLAS_WORKSPACE_CONFIG=:4096:2）
