@@ -3,6 +3,8 @@ import pickle
 data_dir = "/home/tomoya-y/workspace/dataset/Sprite"
 data     = pickle.load(open(data_dir + '/test.pkl', 'rb'))
 
+
+
 X_test      = data['X_test']
 A_test      = data['A_test']
 D_test      = data['D_test']

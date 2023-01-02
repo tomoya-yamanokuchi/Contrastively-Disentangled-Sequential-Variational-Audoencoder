@@ -11,7 +11,7 @@ from custom.utility.image_converter import torch2numpy
 import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
 
-config     = OmegaConf.load("./conf/datamodule/sprite_JunwenBi.yaml")
+config     = OmegaConf.load("./conf/datamodule/sprite_JunwenBai.yaml")
 datamodule = DataModuleFactory().create(**config)
 datamodule.setup(stage="test")
 dataloader = datamodule.test_dataloader()
@@ -20,7 +20,7 @@ dataloader = datamodule.test_dataloader()
 for index, img_dict in dataloader:
     # img = img_dict["images"]
     img = img_dict["m_aug"]
-
+    import ipdb; ipdb.set_trace()
     for test_index in range(len(img)):
         print("[{}-{}] - [{}/{}]".format(index.min(), index.max(), test_index+1, len(img)))
 

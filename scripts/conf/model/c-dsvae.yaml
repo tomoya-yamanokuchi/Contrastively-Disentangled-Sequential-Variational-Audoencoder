@@ -36,7 +36,7 @@ loss:
     normalize: True
 
   mutual_information:
-    name : "JunwenBi"
+    name : "JunwenBai"
 
   weight:
     kld_context          : 1.0
