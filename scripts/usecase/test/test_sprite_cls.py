@@ -1,40 +1,18 @@
+import os
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
 import torch.nn.functional as F
-import argparse
-import os
-import json
-import numpy as np
 
 # ------------------------------------
 import sys; import pathlib; p=pathlib.Path("./"); sys.path.append(str(p.parent.resolve()))
-from domain.model.ModelFactory import ModelFactory
 from domain.classifier.ClassifierJunwenBi.classifier_Sprite_all import classifier_Sprite_all
-from domain.classifier import utils
 from domain.test.TestModel import TestModel
 # ------------------------------------
-from custom.utility import reoder
-
 
 
 def main(config):
     opt = config.model
-
-    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221051030]-[remote_3090]-ee'
-
-    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221051030]-[remote_3090]-ee'
-
-    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072930]-[melco]-'
-    # opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-'
-
-    opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221093615]-[remote_3090]-my_aug'
-    opt.model = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221093617]-[melco]-my_aug'
-
-    opt.group = 'cdsvae_datamodule_sprite_JunwenBi'
-
-
     # ----------------------------------------------------------
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu
 

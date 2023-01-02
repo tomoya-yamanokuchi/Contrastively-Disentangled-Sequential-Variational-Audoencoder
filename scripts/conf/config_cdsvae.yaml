@@ -3,7 +3,7 @@ defaults:
   - datamodule: sprite_JunwenBi
 
 logger:
-  save_dir         : "logs/"
+  save_dir         : "./logs/"
   name             : "cdsvae_sprite"
   default_hp_metric: False
 

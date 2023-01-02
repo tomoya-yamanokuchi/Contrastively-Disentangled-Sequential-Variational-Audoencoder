@@ -1,17 +1,16 @@
 defaults:
   - model    : classifier_sprite
-  - raytune  : async_with_optuna
-  - notify   : slack
+  - datamodule: sprite_JunwenBi
 
 reload:
   path:
 
-datamodule:
-  name       : "sprite_jb"
-  data_dir   : "../dataset/Sprite"
-  # name       : "action_norm_valve"
-  # data_dir   : "./data/"
-  batch_size : 128
+# datamodule:
+#   name       : "sprite_jb"
+#   data_dir   : "../dataset/Sprite"
+#   # name       : "action_norm_valve"
+#   # data_dir   : "./data/"
+#   batch_size : 128
 
 logger:
   save_dir         : "logs/"
