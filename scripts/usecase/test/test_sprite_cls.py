@@ -62,7 +62,6 @@ def main(config):
             label_D = data['D_label']
             c_aug   = data['c_aug']
             m_aug   = data['m_aug']
-            label_D = label_D.squeeze(1)
 
             if opt.type_gt == "action": recon_x_sample, recon_x = cdsvae.forward_fixed_motion_for_classification(x)
             else:                       recon_x_sample, recon_x = cdsvae.forward_fixed_content_for_classification(x)
