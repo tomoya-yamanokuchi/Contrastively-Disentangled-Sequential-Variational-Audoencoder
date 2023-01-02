@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #####################################################
 # switch from root to user
 #####################################################
-ENV UNAME user
+ENV UNAME tomoya-y
 RUN useradd -m $UNAME
 WORKDIR /home/$UNAME
 # For uid, gid

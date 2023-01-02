@@ -1,7 +1,7 @@
 #!/bin/bash
 USER_ID=${LOCAL_UID:-9001}
 GROUP_ID=${LOCAL_GID:-9001}
-UNAME="user"
+UNAME="tomoya-y"
 
 echo "Starting with USER_NAME: $UNAME ($USER_ID:$GROUP_ID)"
 usermod -o -u $USER_ID -m -d /home/$UNAME $UNAME
