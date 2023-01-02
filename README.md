@@ -60,4 +60,4 @@ Because, it requires a lot of memory (RAM).
 $ python3.8 usecase/train/train.py
 ```
 
-The log file will be generated in the `. /log` directory.
+The log file will be generated in the `./scripts/log` directory.
