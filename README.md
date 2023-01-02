@@ -3,36 +3,35 @@ Overview of this repository
 Pytorch-lightning implementation of [C-DSVAE](https://github.com/JunwenBai/C-DSVAE) with docker environment.
 
 
+
+
 Main procedure for running the training code
 -----------------------
+
+## clone github repository
 ```
 $ mkdir ~/workspace
 $ cd ~/workspace
 $ git clone https://github.com/tomoya-yamanokuchi/Contrastively-Disentangled-Sequential-Variational-Audoencoder.git
 $ cd Contrastively-Disentangled-Sequential-Variational-Audoencoder
+```
+
+## set docker user-name in 'Dockerfile' and 'entrypoint.sh' to match your local host environment.
+```
+ex.) if your loacal host environment is 'tomoya-y@xxx:'
+ (line 9 at Dockerfile) ENV UNAME user --> ENV UNAME tomoya-y
+ (line 4 at entrypoint.sh) UNAME='user' --> UNAME='tomoya-y'
+```
+
+## build dokcer-image and run container
+```
 $ sh build.sh
 $ sh run.sh
+```
 
---- docker container ---
+## run python script
+```
+(in docker container)
 $ cd /home/$USER/workspace/Contrastively-Disentangled-Sequential-Variational-Audoencoder/
 $
-```
-Note:
-- workspace is shared local folder to develop your codes.
-- catkin_ws is shared local ROS folder.
-
-
-
-If you get errors, check below
------------------------
-- Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock:
-```
-sudo usermod -aG docker ${USER}
-su - ${USER}
-```
-
-- If you get "error", try remove
-```
-RUN rm /etc/apt/sources.list.d/cuda.list
-RUN rm /etc/apt/sources.list.d/nvidia-ml.list
 ```
