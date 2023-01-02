@@ -9,34 +9,11 @@ from custom.utility.image_converter import torch2numpy
 import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
 
-
-log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221210035007]-[remote_3090]-32219"
-log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212525]-[remote_3090]-momo"
-log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212235346]-[dl-box]-nene"
-log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212231238]-[melco]-neko"
-log = "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221212212403]-[melco]-neko"
-
-# with my augument
-log = "[c-dsvae]-[sprite_aug]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220191632]-[remote_3090]-"
-log = "[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221220221019]-[melco]-"
-
-# with my logdensity
-# log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072930]-[melco]-'
-log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221072950]-[remote_3090]-'
-
-# with my logdensity & augumentation
-log = '[c-dsvae]-[sprite_JunwenBi]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221093617]-[melco]-my_aug'
-
-# Valve'
-log = '[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221221142802]-[melco]-'
-log = '[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[500epoch]-[20221222003141]-[remote_3090]-kkk'
-
+log   = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102200618]-melco_ooo'
+group = 'cdsvae_sprite'
 
 # ----------------------------------------------------------------------------------
-# model   = "cdsvae_datamodule_sprite_JunwenBi"
-model   = "cdsvae_action_norm_valve"
-
-log_dir = "/hdd_mount/logs_cdsvae/{}/".format(model)
+log_dir = "./logs/{}/".format(group)
 test    = TestModel(
     config_dir  = log_dir + log,
     checkpoints = "last.ckpt"
@@ -47,8 +24,8 @@ dataloader = test.load_dataloader()
 num_slice  = 1
 _step      = 0
 
-fixed = "motion"
-# fixed = "content"
+# fixed = "motion"
+fixed = "content"
 # ----------------------------------------------------------------------------------
 for index, img_dict in dataloader:
     img = img_dict["images"]
@@ -68,8 +45,7 @@ for index, img_dict in dataloader:
             # for i in range(1):
                 if fixed == "motion"  :
                     x_sample = model.forward_fixed_motion(z_mean)
-                    # x_sample = model.decode(z_mean, f_mean)
-                    x_sample = x_sample[0][::4]
+                    x_sample = x_sample[_step][::num_slice]
                     x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
                     x_sample = torch2numpy(x_sample)
                     x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
@@ -79,7 +55,6 @@ for index, img_dict in dataloader:
                 elif fixed == "content" :
                     x_sample = model.forward_fixed_content(f_mean, step)
                     x_sample = x_sample[0]
-                    # import ipdb; ipdb.set_trace()
                     for t in range(step):
                         _x = torchvision.utils.make_grid(x_sample[t], nrow=1, padding=0, pad_value=0.0, normalize=True)
                         _x = torch2numpy(_x)

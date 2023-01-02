@@ -32,7 +32,10 @@ class MutualInformation_JunwenBai(nn.Module):
             raise ValueError('Must specify the dimension.')
 
 
-    # def log_density(self, sample, mu, logsigma):
+    # def log_density(self, mean, logvar, sample):
+    #     mu       = mean
+    #     logsigma = logvar
+    #     # -----------------------------------
     #     mu = mu.type_as(sample)
     #     logsigma = logsigma.type_as(sample)
     #     c = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
@@ -44,7 +47,7 @@ class MutualInformation_JunwenBai(nn.Module):
 
     def log_density(self, mean, logvar, sample):
         c          = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
-        return -0.5 * (c + logvar + ((sample - mean)**2 / torch.exp(logvar)))
+        return -0.5 * (c + logvar + ((sample - mean)**2 * torch.exp(-logvar)))
 
 
     def forward(self, f_dist, z_dist):
