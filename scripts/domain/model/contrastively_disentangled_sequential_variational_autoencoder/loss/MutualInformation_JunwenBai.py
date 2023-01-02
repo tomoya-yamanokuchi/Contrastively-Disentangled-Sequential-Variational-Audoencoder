@@ -11,9 +11,9 @@ compute
      = - log(MN) + logsumexp_m(q(z|x_m))
 '''
 
-class MutualInformation_JunwenBi(nn.Module):
+class MutualInformation_JunwenBai(nn.Module):
     def __init__(self, num_train: int):
-        super(MutualInformation_JunwenBi, self).__init__()
+        super(MutualInformation_JunwenBai, self).__init__()
         self.num_train = num_train
 
 

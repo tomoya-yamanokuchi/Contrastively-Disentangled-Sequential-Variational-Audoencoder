@@ -3,6 +3,6 @@ from .sprite_JunwenBai.SpriteJunwenBaiDataModule import SpriteJunwenBaiDataModul
 
 class DataModuleFactory:
     def create(self, name: str, **kwargs):
-        if name == "sprite_JunwenBi"  : return SpriteJunwenBaiDataModule(**kwargs)
+        if name == "sprite_JunwenBai"  : return SpriteJunwenBaiDataModule(**kwargs)
         else: NotImplementedError()
 

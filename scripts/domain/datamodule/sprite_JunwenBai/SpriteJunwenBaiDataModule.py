@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split
 from typing import Optional
 from omegaconf import DictConfig
+from .SpriteJunwenBai_with_myaug import SpriteJunwenBai_with_myaug as SpriteJunwenBai
 
 
 class SpriteJunwenBaiDataModule(pl.LightningDataModule):
@@ -22,13 +23,6 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
 
 
     def setup(self, stage: Optional[str] = None):
-        if self.sub_name == "origin":
-            from .SpriteJunwenBai_FastLoad import SpriteJunwenBai_FastLoad as SpriteJunwenBai
-            # from .SpriteJunwenBai_SlowLoad import SpriteJunwenBai_SlowLoad as SpriteJunwenBai
-        elif self.sub_name == "my_aug":
-            from .SpriteJunwenBai_with_myaug import SpriteJunwenBai_with_myaug as SpriteJunwenBai
-
-
         if stage == "fit" or stage is None:
             self.train = SpriteJunwenBai(data_dir=self.data_dir, train=True)
             self.val   = SpriteJunwenBai(data_dir=self.data_dir, train=False)

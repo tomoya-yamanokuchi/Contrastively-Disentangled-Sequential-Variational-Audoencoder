@@ -1,6 +1,5 @@
-name     : "sprite_JunwenBi"
-# sub_name : "my_aug"
-sub_name : "origin"
+name     : "sprite_JunwenBai"
+sub_name : "my_aug"
 data_dir : "../dataset/Sprite"
 
 config_dataloader:

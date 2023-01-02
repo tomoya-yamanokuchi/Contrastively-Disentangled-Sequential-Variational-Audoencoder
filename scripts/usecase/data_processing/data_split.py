@@ -1,13 +1,15 @@
 import pickle
 
-# data_dir = "/home/tomoya-y/workspace/dataset/Sprite"
-data_dir = "~/workspace/dataset/Sprite"
+data_dir = "/home/tomoya-y/workspace/dataset/Sprite"
+# data_dir = "~/workspace/dataset/Sprite"
 
 
-data = pickle.load(open(data_dir + '/data.pkl', 'rb'))
-
+with open(data_dir + '/data.pkl', mode='rb') as f:
+    data = pickle.load(f)
 
 save_train = False
+
+import ipdb; ipdb.set_trace()
 
 if save_train:
     with open(data_dir + '/train.pkl', mode='wb') as f:

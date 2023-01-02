@@ -136,11 +136,12 @@ class LitContrastivelyDisentangledSequentialVariationalAutoencoder(pl.LightningM
             images        = []
             for n in range(save_sequence):
                 images_unit = []
-                images_unit.append(utils.make_grid(torch.ones_like(img_batch[n]), nrow=step, padding=2, pad_value=1.0, normalize=False))
-                images_unit.append(utils.make_grid(results_dict["x_recon"][n],    nrow=step, padding=2, pad_value=0.0, normalize=True))
-                images_unit.append(utils.make_grid(              img_batch[n],    nrow=step, padding=2, pad_value=0.0, normalize=True))
-                images_unit.append(utils.make_grid(        img_aug_context[n],    nrow=step, padding=2, pad_value=0.0, normalize=True))
-                images_unit.append(utils.make_grid(       img_aug_dynamics[n],    nrow=step, padding=2, pad_value=0.0, normalize=True))
+                images_unit.append(utils.make_grid(torch.ones_like(img_batch[n]),     nrow=step, padding=2, pad_value=1.0, normalize=False))
+                images_unit.append(utils.make_grid(results_dict["x_recon"][n],        nrow=step, padding=2, pad_value=0.0, normalize=True))
+                images_unit.append(utils.make_grid(              img_batch[n],        nrow=step, padding=2, pad_value=0.0, normalize=True))
+                images_unit.append(utils.make_grid(        img_aug_context[n],        nrow=step, padding=2, pad_value=0.0, normalize=True))
+                images_unit.append(utils.make_grid(img_batch[n] - img_aug_context[n], nrow=step, padding=2, pad_value=0.0, normalize=False))
+                images_unit.append(utils.make_grid(       img_aug_dynamics[n],        nrow=step, padding=2, pad_value=0.0, normalize=True))
                 images.append(torch.cat(images_unit, dim=1))
 
             print("\n\n---------------------------------------")

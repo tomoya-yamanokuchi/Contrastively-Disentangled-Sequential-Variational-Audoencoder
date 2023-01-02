@@ -28,6 +28,9 @@ class MotionAugumentation:
         assert (img.min() >= 0.0) and (img.max() <= 1.0)
         img = self.transform_color_dist(img)
         img = torch.cat([self.transform_GaussianBlur(_img) for _img in torch.split(img, 1, 0)], dim=0)
+        # ------
+        img = torch.maximum(img, Tensor([0.0]))
+        img = torch.minimum(img, Tensor([1.0]))
         return img
 
 

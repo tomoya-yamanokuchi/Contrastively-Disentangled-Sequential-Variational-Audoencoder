@@ -1,6 +1,6 @@
 defaults:
   - model     : c-dsvae
-  - datamodule: sprite_JunwenBi
+  - datamodule: sprite_JunwenBai
 
 logger:
   save_dir         : "./logs/"
@@ -13,7 +13,7 @@ experiment:
 
 trainer:
   gpus                : [0]
-  max_epochs          : 500
+  max_epochs          : 300
   enable_progress_bar : True
   deterministic       : False
   log_every_n_steps   : 1
