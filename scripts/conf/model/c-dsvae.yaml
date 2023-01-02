@@ -37,7 +37,6 @@ loss:
 
   mutual_information:
     name : "JunwenBi"
-    # name : "develop"
 
   weight:
     kld_context          : 1.0

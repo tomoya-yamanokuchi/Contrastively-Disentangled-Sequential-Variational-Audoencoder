@@ -47,7 +47,6 @@ $ (download zip format dataset from above link and extract)
 $ sh run.sh
 
 (in docker container)
-$ cd workspace/Contrastively-Disentangled-Sequential-Variational-Audoencoder/
 $ python3.8 usecase/data_processing/data_split.py
 ```
 

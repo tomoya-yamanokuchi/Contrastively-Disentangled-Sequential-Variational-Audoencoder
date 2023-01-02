@@ -92,3 +92,9 @@ RUN python3.8 -m pip install -r requirements.txt
 #####################################################
 COPY pip/requirements_pytorch_lightning.txt requirements_pytorch_lightning.txt
 RUN python3.8 -m pip install -r requirements_pytorch_lightning.txt
+
+
+#####################################################
+# Set working directory
+#####################################################
+WORKDIR /home/$UNAME/workspace/Contrastively-Disentangled-Sequential-Variational-Audoencoder
