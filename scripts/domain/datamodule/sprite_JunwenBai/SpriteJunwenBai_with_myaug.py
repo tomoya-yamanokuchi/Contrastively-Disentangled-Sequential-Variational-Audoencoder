@@ -52,22 +52,29 @@ class SpriteJunwenBai_with_myaug(VisionDataset):
         if   self.train: name = "train"
         else           : name = "test"
         # --------- load dataset ---------
-        data = pickle.load(open(self.data_dir + '/{}.pkl'.format(name), 'rb'))
-        self.data    = data['X_{}'.format(name)]
-        self.N       = self.data.shape[0]
+        data          = pickle.load(open(self.data_dir + '/{}.pkl'.format(name), 'rb'))
+        A_label_anker = data['A_{}'.format(name)]
+        D_label_anker = data['D_{}'.format(name)]
+        data          = data['X_{}'.format(name)] # destructive assgin
+        self.N        = data.shape[0]
         # ------ apply augumentation ------
-        self.images = []
-        self.c_aug  = []
-        self.m_aug  = []
+        self.images  = []
+        self.c_aug   = []
+        self.m_aug   = []
+        self.A_label = []
+        self.D_label = []
         for n in range(self.N):
-            img_numpy = self.data[n]                    # (8, 64, 64, 3)
-            img_torch = self.to_tensor_image(img_numpy) # (8, 3, 64, 64)
+            img_torch = self.to_tensor_image(data[n]) # (8, 3, 64, 64)
             self.images.append(self._image_range_assetion(img_torch))
             self.c_aug.append( self._image_range_assetion(self.content_augumentation.augment(img_torch)))
             self.m_aug.append( self._image_range_assetion(self.motion_augumentation.augment(img_torch)))
-        self.images = torch.stack(self.images, axis=0)
-        self.c_aug  = torch.stack(self.c_aug, axis=0)
-        self.m_aug  = torch.stack(self.m_aug, axis=0)
+            self.A_label.append(self.to_tensor_label(A_label_anker[n]))
+            self.D_label.append(self.to_tensor_label(D_label_anker[n]))
+        self.images  = torch.stack(self.images,  axis=0)
+        self.c_aug   = torch.stack(self.c_aug,   axis=0)
+        self.m_aug   = torch.stack(self.m_aug,   axis=0)
+        self.A_label = torch.stack(self.A_label, axis=0)
+        self.D_label = torch.stack(self.D_label, axis=0)
 
 
     def __getitem__(self, index):
@@ -75,6 +82,8 @@ class SpriteJunwenBai_with_myaug(VisionDataset):
             "images" : self.images[index].cuda(),
             "c_aug"  : self.c_aug[index].cuda(),
             "m_aug"  : self.m_aug[index].cuda(),
+            "A_label": self.A_label[index].cuda(),
+            "D_label": self.D_label[index].cuda(),
             "index"  : index,
         }
 
@@ -85,5 +94,6 @@ class SpriteJunwenBai_with_myaug(VisionDataset):
 
 
     def to_tensor_label(self, label):
+        # import ipdb; ipdb.set_trace()
         # assert len(pic.shape) == 4 # (step, width, height, channel)
-        return torch.from_numpy(label).contiguous()
+        return torch.as_tensor(label.astype('float32'))
