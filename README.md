@@ -87,3 +87,18 @@ Epoch[0/3] : [acc[%], IS, H_yx, H_y] = [89.06, 6.2501, 0.3391, 2.1717]
 Epoch[1/3] : [acc[%], IS, H_yx, H_y] = [88.83, 6.3139, 0.3298, 2.1725]
 Epoch[2/3] : [acc[%], IS, H_yx, H_y] = [88.87, 6.3336, 0.3274, 2.1732]
 ```
+
+
+Image generation with the fixd component
+-----------------------
+
+### fixexd_motion:
+![fixed_motion_left_0_1](https://user-images.githubusercontent.com/49630508/208916967-bd44c251-85f7-4903-a5be-52f27ea70f16.gif)
+![fixed_motion_center_0_0](https://user-images.githubusercontent.com/49630508/208916960-f96450ae-2352-4635-ab5b-f814f75e7bd0.gif)
+![fixed_motion_right_0_38](https://user-images.githubusercontent.com/49630508/208916970-c7135a38-4254-4315-a9b4-b834632b7483.gif)
+
+
+### fixexd_content:
+![fixed_content_green_hair_0_21](https://user-images.githubusercontent.com/49630508/208916886-ca07dc89-b251-4347-b99e-3cbf80858de3.gif)
+![fixed_content_red_hair_0_0](https://user-images.githubusercontent.com/49630508/208916890-1d8ecf49-6692-4875-bdbe-2ccf165189ca.gif)
+![fixed_content_white_hair_0_14](https://user-images.githubusercontent.com/49630508/208916893-e6f9717e-af88-4fd2-b13d-e8e0f14942e7.gif)
