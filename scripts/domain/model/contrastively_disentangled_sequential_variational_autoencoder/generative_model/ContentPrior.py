@@ -1,6 +1,7 @@
 import torch
 from custom import reparameterize
 
+
 class ContentPrior:
     def __init__(self, context_dim):
         self.context_dim = context_dim
@@ -9,7 +10,6 @@ class ContentPrior:
         return torch.zeros(num_batch, self.context_dim).cuda()
 
     def logvar(self, num_batch: int):
-        # 後でexp()の処理が入るのでここでは0
         return torch.zeros(num_batch, self.context_dim).cuda()
 
     def sample(self, num_batch: int):

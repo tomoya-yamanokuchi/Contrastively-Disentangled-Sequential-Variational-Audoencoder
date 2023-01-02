@@ -1,7 +1,6 @@
 defaults:
   - model     : c-dsvae
   - datamodule: sprite_JunwenBi
-  # - datamodule: sprite_aug
 
 logger:
   save_dir         : "logs/"

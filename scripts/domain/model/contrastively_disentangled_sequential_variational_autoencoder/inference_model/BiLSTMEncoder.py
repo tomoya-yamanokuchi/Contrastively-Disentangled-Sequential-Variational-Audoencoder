@@ -1,12 +1,6 @@
-import torch
-import torchinfo
-from torch import Tensor
-from torch import nn
 from typing import List
-import numpy as np
-from custom.layer.LinearUnit import LinearUnit
-from custom.utility.reparameterize import reparameterize
-
+from torch import nn
+from torch import Tensor
 
 
 class BiLSTMEncoder(nn.Module):
@@ -24,8 +18,6 @@ class BiLSTMEncoder(nn.Module):
             bidirectional = True, # if True:  output dim is lstm_hidden_dim * 2
             batch_first   = True,
         )
-        # x = self.forward(Tensor(np.random.randn(32, 8, 128)))
-        # import ipdb; ipdb.set_trace()
 
 
     def forward(self,  x: Tensor) -> List[Tensor]:

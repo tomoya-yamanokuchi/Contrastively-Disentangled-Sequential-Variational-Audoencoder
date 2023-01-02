@@ -1,7 +1,6 @@
 import torch
 from torch import Tensor
 from torchvision import transforms
-from custom import normalize
 
 
 class MotionAugumentation:

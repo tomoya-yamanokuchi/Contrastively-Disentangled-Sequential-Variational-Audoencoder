@@ -1,8 +1,8 @@
+import math
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 
 '''
 compute
@@ -10,10 +10,6 @@ compute
     ~= log 1/(NM) sum_m=1^M q(z|x_m)
      = - log(MN) + logsumexp_m(q(z|x_m))
 '''
-
-from custom.visualize.VectorHeatmap import VectorHeatmap
-VectorHeatmap = VectorHeatmap()
-
 
 class MutualInformation_JunwenBi(nn.Module):
     def __init__(self, num_train: int):
@@ -48,9 +44,7 @@ class MutualInformation_JunwenBi(nn.Module):
 
     def log_density(self, mean, logvar, sample):
         c          = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
-        # logdensity =
         return -0.5 * (c + logvar + ((sample - mean)**2 / torch.exp(logvar)))
-
 
 
     def forward(self, f_dist, z_dist):
@@ -80,18 +74,11 @@ class MutualInformation_JunwenBi(nn.Module):
         )
 
         _logq_fz_tmp = torch.cat((_logq_f_tmp, _logq_z_tmp), dim=3) # [8, 128, 128, 288]
-        # import ipdb; ipdb.set_trace()
+
         logq_f  = (self.logsumexp(_logq_f_tmp.sum(3), dim=2, keepdim=False)  - math.log(num_batch * self.num_train)) # [8, 128]
         logq_z  = (self.logsumexp(_logq_z_tmp.sum(3), dim=2, keepdim=False)  - math.log(num_batch * self.num_train)) # [8, 128]
         logq_fz = (self.logsumexp(_logq_fz_tmp.sum(3), dim=2, keepdim=False) - math.log(num_batch * self.num_train)) # [8, 128]
-        # step x num_batch
 
-        # print("logq_f = {:.6f}".format(-logq_f.mean().detach().cpu().numpy()))
-        # print("logq_z = {:.6f}".format(-logq_z.mean().detach().cpu().numpy()))
-        # print("logq_fz = {:.6f}".format(logq_fz.mean().detach().cpu().numpy()))
-        # print(logq_fz.mean())
-
-        # import ipdb; ipdb.set_trace()
-        mi_fz = F.relu(logq_fz - logq_f - logq_z).mean()
+        mi_fz   = F.relu(logq_fz - logq_f - logq_z).mean()
 
         return mi_fz

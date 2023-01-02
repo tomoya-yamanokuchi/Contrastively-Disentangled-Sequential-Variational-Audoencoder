@@ -1,9 +1,7 @@
 import torch
-import torchinfo
 from torch import Tensor
 from torch import nn
 from typing import List
-import numpy as np
 from custom.layer.LinearUnit import LinearUnit
 from custom.utility.reparameterize import reparameterize
 
@@ -15,17 +13,8 @@ class ContextEncoder(nn.Module):
                  **kwargs) -> None:
         super().__init__()
         self.lstm_hidden_dim = lstm_hidden_dim
-        # self.mean            = LinearUnit(lstm_hidden_dim*2, context_dim, batchnorm=False)
-        # self.logvar          = LinearUnit(lstm_hidden_dim*2, context_dim, batchnorm=False)
-
-        # self.mean            = nn.Linear(lstm_hidden_dim*2, context_dim)
-        # self.logvar          = nn.Linear(lstm_hidden_dim*2, context_dim)
-
-        self.f_mean   = LinearUnit(self.lstm_hidden_dim * 2, context_dim, False)
-        self.f_logvar = LinearUnit(self.lstm_hidden_dim * 2, context_dim, False)
-
-        # self.forward(Tensor(np.random.randn(32, 8, lstm_hidden_dim*2)))
-        # import ipdb; ipdb.set_trace()
+        self.f_mean          = LinearUnit(self.lstm_hidden_dim * 2, context_dim, False)
+        self.f_logvar        = LinearUnit(self.lstm_hidden_dim * 2, context_dim, False)
 
 
     def forward(self, lstm_out: Tensor) -> List[Tensor]:

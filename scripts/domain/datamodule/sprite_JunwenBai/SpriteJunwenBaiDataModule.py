@@ -18,7 +18,6 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
 
 
     def prepare_data(self):
-        # download
         print("no implementation for download data")
 
 
@@ -33,7 +32,6 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
         if stage == "fit" or stage is None:
             self.train = SpriteJunwenBai(data_dir=self.data_dir, train=True)
             self.val   = SpriteJunwenBai(data_dir=self.data_dir, train=False)
-            # import ipdb; ipdb.set_trace()
             assert self.val.__len__() == self.num_valid, "{} != {}".format(self.val.__len__, self.num_valid)
             assert self.train.__len__() + self.val.__len__() == self.num_dataset
 
@@ -47,7 +45,6 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(self.train, **self.config_dataloader.train)
-        # return DataLoader(self.val, **self.config_dataloader.except_train)
 
     def val_dataloader(self):
         return DataLoader(self.val, **self.config_dataloader.except_train)

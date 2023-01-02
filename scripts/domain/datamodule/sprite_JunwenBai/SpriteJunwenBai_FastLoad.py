@@ -1,13 +1,8 @@
-import cv2
-from torch.utils.data import Dataset
-from torchvision.datasets import VisionDataset
-import torch
-import os
-import random
 import pickle
 import numpy as np
-from pathlib import Path
-from typing import List, Tuple, Optional, Callable
+import torch
+from torchvision.datasets import VisionDataset
+
 
 
 class SpriteJunwenBai_FastLoad(VisionDataset):
@@ -18,7 +13,7 @@ class SpriteJunwenBai_FastLoad(VisionDataset):
         - step              : 8
         - image size        : (3, 64, 64)
         - action variation  : 9
-            - 歩いたり，手を振ったりなど
+            - actions (walking, spellcasting, slashing) x directions (left, front, right)
         - minmax value:
             - min:  0.0
             - max:  1.0

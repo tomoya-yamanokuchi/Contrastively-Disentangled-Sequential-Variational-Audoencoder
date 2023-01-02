@@ -7,6 +7,7 @@ import numpy as np
 from custom.layer.LinearUnit import LinearUnit
 from custom.utility.reparameterize import reparameterize
 
+
 class FullConnectMotionEncoder(nn.Module):
     def __init__(self,
                  in_dim           : int,

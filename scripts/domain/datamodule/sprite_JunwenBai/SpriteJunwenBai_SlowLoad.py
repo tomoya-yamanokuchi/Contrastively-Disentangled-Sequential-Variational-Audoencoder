@@ -17,7 +17,7 @@ class SpriteJunwenBai_SlowLoad(VisionDataset):
         - step              : 8
         - image size        : (3, 64, 64)
         - action variation  : 9
-            - 歩いたり，手を振ったりなど
+            - actions (walking, spellcasting, slashing) x directions (left, front, right)
         - minmax value:
             - min:  0.0
             - max:  1.0
@@ -50,9 +50,6 @@ class SpriteJunwenBai_SlowLoad(VisionDataset):
         idx            = np.random.randint(self.aug_num)
         c_aug_anchor   = self.c_aug[index][idx] # (8, 64, 64, 3)
         m_aug_anchor   = self.m_aug[index][idx] # (8, 64, 64, 3)
-
-        # print("min: {} max: {}".format(data_ancher.min(), data_ancher.max())) # --> min=0.0, max=1.0
-        # import ipdb; ipdb.set_trace()
 
         return index, {
             "images" : data_ancher,
