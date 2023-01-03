@@ -10,9 +10,16 @@ config_dataloader:
     pin_memory : False
     num_workers: 0
 
-  except_train:
+  val:
     batch_size : 128
     shuffle    : False
     drop_last  : True
+    pin_memory : False
+    num_workers: 0
+
+  test:
+    batch_size : 128
+    shuffle    : False
+    drop_last  : False
     pin_memory : False
     num_workers: 0

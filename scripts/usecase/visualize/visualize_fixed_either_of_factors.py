@@ -9,13 +9,14 @@ from custom.utility.image_converter import torch2numpy
 import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
 
-log   = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102200618]-melco_ooo'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102200618]-melco_ooo'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
 group = 'cdsvae_sprite'
 
 # ----------------------------------------------------------------------------------
-log_dir = "./logs/{}/".format(group)
+log_dir = "/hdd_mount/logs_cdsvae/{}/".format(group)
 test    = TestModel(
-    config_dir  = log_dir + log,
+    config_dir  = log_dir + model,
     checkpoints = "last.ckpt"
 )
 model      = test.load_model()
@@ -24,8 +25,8 @@ dataloader = test.load_dataloader()
 num_slice  = 1
 _step      = 0
 
-# fixed = "motion"
-fixed = "content"
+fixed = "motion"
+# fixed = "content"
 # ----------------------------------------------------------------------------------
 for index, img_dict in dataloader:
     img = img_dict["images"]
