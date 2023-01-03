@@ -41,11 +41,11 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
         return DataLoader(self.train, **self.config_dataloader.train)
 
     def val_dataloader(self):
-        return DataLoader(self.val, **self.config_dataloader.except_train)
+        return DataLoader(self.val, **self.config_dataloader.val)
 
     def test_dataloader(self):
-        return DataLoader(self.test, **self.config_dataloader.except_train)
+        return DataLoader(self.test, **self.config_dataloader.test)
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, **self.config_dataloader.except_train)
+        return DataLoader(self.predict, **self.config_dataloader.predict)
 

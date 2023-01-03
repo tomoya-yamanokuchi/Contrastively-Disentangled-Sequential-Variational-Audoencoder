@@ -43,4 +43,4 @@ loss:
     kld_dynamics         : 1.0
     contrastive_loss_fx  : 10.0
     contrastive_loss_zx  : 10.0
-    mutual_information_fz: 10.0
+    mutual_information_fz: 1.0

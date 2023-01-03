@@ -25,6 +25,6 @@ type_gt      : 'action'
 niter        : 3
 
 resume  : './judges/Sprite/sprite_judge.tar'
-log_dir : "./logs"
+log_dir : "/hdd_mount/logs_cdsvae"
 group   : 'cdsvae_sprite'
 model   : '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102200618]-melco_ooo'
