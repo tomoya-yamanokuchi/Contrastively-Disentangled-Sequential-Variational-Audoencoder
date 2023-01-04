@@ -23,3 +23,10 @@ config_dataloader:
     drop_last  : True
     pin_memory : False
     num_workers: 0
+
+  grouped:
+    batch_size : 9
+    shuffle    : False
+    drop_last  : True
+    pin_memory : False
+    num_workers: 0

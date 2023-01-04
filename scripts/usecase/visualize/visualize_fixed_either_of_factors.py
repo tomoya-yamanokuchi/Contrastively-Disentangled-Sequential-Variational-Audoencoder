@@ -12,6 +12,21 @@ import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102200618]-melco_ooo'
 model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
 model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062313]-remote3090_mmm'
+
+# cdsvae
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062258]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103080755]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103090028]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103095302]-melco_mmm'
+
+# DSVAE
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062313]-remote3090_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071925]-remote3090_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103081559]-remote3090_mmm'
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103091218]-remote3090_mmm'
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103100839]-remote3090_mmm'
+
 group = 'cdsvae_sprite'
 
 # ----------------------------------------------------------------------------------
@@ -47,8 +62,14 @@ for index, img_dict in dataloader:
             # for i in range(1):
                 if fixed == "motion"  :
                     x_sample = model.forward_fixed_motion(z_mean)
-                    x_sample = x_sample[_step][::num_slice]
-                    x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
+                    x_sample = x_sample[0][::num_slice]
+
+                    if True:
+                        x_sample = x_sample[4] # 特定のステップだけを取り出す
+                        x_sample = torchvision.utils.make_grid(x_sample, nrow=1, padding=0, pad_value=0.0, normalize=True)
+                    else:
+                        x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
+
                     x_sample = torch2numpy(x_sample)
                     x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
                     cv2.imshow("img", x_sample)

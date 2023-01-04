@@ -1,11 +1,12 @@
-import copy
+import time
+import os
 import numpy as np
-import torch
 import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
 import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
 from domain.test.TestModel import TestModel
 from custom.visualize.VectorHeatmap import VectorHeatmap
 from custom.utility.image_converter import torch2numpy
+from domain.datamodule.DataModuleFactory import DataModuleFactory
 
 
 log = "[c-dsvae]-[sprite_aug]-[dim_f=14]-[dim_z=7]-[500epoch]-[20221122171135]"
@@ -19,40 +20,55 @@ log = "[c-dsvae]-[sprite_aug]-[dim_f=128]-[dim_z=8]-[500epoch]-[20221125102327]"
 log = "[c-dsvae]-[sprite_aug]-[dim_f=72]-[dim_z=7]-[500epoch]-[20221127005444]"
 
 log = "[c-dsvae]-[sprite_aug]-[dim_f=72]-[dim_z=7]-[500epoch]-[20221127035954]"
+
+
+# cdsvae
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062258]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103080755]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103090028]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103095302]-melco_mmm'
+
+# DSVAE
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062313]-remote3090_mmm'
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071925]-remote3090_mmm'
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103081559]-remote3090_mmm'
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103091218]-remote3090_mmm'
+# model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103100839]-remote3090_mmm'
+
+group = 'cdsvae_sprite'
+
 # ----------------------------------------------------------------------------------
-model   = "C-DSVAE2"
-log_dir = "/home/tomoya-y/workspace/pytorch_lightning_VAE/logs/{}/".format(model)
+log_dir = "/hdd_mount/logs_cdsvae/{}/".format(group)
 test    = TestModel(
-    config_dir  = log_dir + log,
+    config_dir  = log_dir + model,
     checkpoints = "last.ckpt"
 )
-device     = test.device
 model      = test.load_model()
-dataloader = test.load_dataloader()
+datamodule = DataModuleFactory().create(**test.config.datamodule)
+datamodule.setup(stage="test")
+dataloader = datamodule.grouped_dataloader()
 # ----------------------------------------------------------------------------------
-import cv2
+# import cv2
 # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
-vectorHeatmap = VectorHeatmap()
-for index, img_tuple in dataloader:
-    (img, img_aug_context, img_aug_dynamics) = img_tuple
-    f = []
-    for test_index in range(len(img)):
-        print("[{}-{}] - [{}/{}]".format(index.min(), index.max(), test_index+1, len(img_tuple[0])))
+dirname  = time.time()
+save_dir = "./vectorHeatmap/{}".format(dirname)
+os.makedirs(save_dir, exist_ok=True)
 
-        img_seq        = img[test_index].unsqueeze(dim=0).to(device)
-        return_dict    = model(img_seq)
-        _f             = return_dict["f_mean"].to("cpu").numpy()
-        _, dim_f       = _f.shape
-        f.append(copy.deepcopy(_f))
+for index, img_dict in dataloader:
+    image           = img_dict["images"]
+    num_batch, step = image.shape[:2]
 
-    # import ipdb; ipdb.set_trace()
-    images = torch.concat(torch.split(img, 1, dim=0), dim=3).squeeze(0)
-    images = torch.concat(torch.split(images, 1, dim=0), dim=-1).squeeze(0)
-    images = torch2numpy(images)
-    images = cv2.cvtColor(images, cv2.COLOR_RGB2BGR)
-    # cv2.imshow("ddd", images)
-    # cv2.waitKey(10)
-    # import ipdb; ipdb.set_trace()
-    vectorHeatmap.pause_show(np.concatenate(f, axis=0), interval=1)
+    for test_index in range(num_batch):
+        print("[{}-{}] - [{}/{}]".format(index.min(), index.max(), test_index+1, num_batch))
+
+        (f_mean, f_logvar, f_sample), (z_mean, z_logvar, z_sample) = model.encode(image)
+
+        f = f_mean.to("cpu").numpy()
+        z = z_mean.to("cpu").numpy()
+
+        VectorHeatmap().save_plot(v=np.transpose(f), save_path="{}/content_text_index_{}".format(save_dir, test_index))
+        [VectorHeatmap().save_plot(v=np.transpose(z[t]), save_path="{}/motion_text_index_{}_step_{}".format(save_dir, test_index, t)) for t in range(step)]
+        sys.exit()
 

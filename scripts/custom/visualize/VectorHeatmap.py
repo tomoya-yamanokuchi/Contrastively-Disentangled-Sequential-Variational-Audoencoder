@@ -10,7 +10,7 @@ class VectorHeatmap:
         self.fig, self.ax = plt.subplots()
 
 
-    def pause_show(self, v, cmap='gray', interval: float=0.5, reset=True):
+    def pause_show(self, v, cmap='gray', interval: float=0.5, reset=True, name=""):
         # if reset:
         #     self.fig, self.ax = plt.subplots()
         # self.fig.cla()
@@ -18,6 +18,8 @@ class VectorHeatmap:
         # len_v = len(v.shape)
         w, h  = v.shape
 
+        # import ipdb; ipdb.set_trace()
+        # im = self.ax.imshow(v, cmap=cmap)
         im = self.ax.imshow(v, cmap=cmap, vmin=v.min(), vmax=v.max())
 
         plt.setp(self.ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
@@ -33,3 +35,11 @@ class VectorHeatmap:
         # import ipdb; ipdb.set_trace()
         if interval < 0: plt.show()
         else:            plt.pause(interval)
+
+        plt.savefig("./vector_heatmap_{}.png".format(name))
+
+
+    def save_plot(self, save_path, v, cmap='gray'):
+        im = self.ax.imshow(v, cmap=cmap, vmin=v.min(), vmax=v.max())
+        plt.setp(self.ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+        plt.savefig(save_path)

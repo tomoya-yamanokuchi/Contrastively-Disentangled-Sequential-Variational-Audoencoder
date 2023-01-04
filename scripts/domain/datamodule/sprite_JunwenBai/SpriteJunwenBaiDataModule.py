@@ -49,3 +49,6 @@ class SpriteJunwenBaiDataModule(pl.LightningDataModule):
     def predict_dataloader(self):
         return DataLoader(self.predict, **self.config_dataloader.predict)
 
+    def grouped_dataloader(self):
+        return DataLoader(self.test, **self.config_dataloader.grouped)
+

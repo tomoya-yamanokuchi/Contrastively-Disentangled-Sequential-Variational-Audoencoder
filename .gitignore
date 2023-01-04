@@ -4,6 +4,8 @@ logs_test
 summary
 summary_fig
 outputs
+vectorHeatmap
+gif
 # judges
 data/
 lightning_logs/

@@ -8,22 +8,12 @@ import torch.nn.functional as F
 import sys; import pathlib; p=pathlib.Path("./"); sys.path.append(str(p.parent.resolve()))
 from domain.classifier.ClassifierJunwenBi.classifier_Sprite_all import classifier_Sprite_all
 from domain.test.TestModel import TestModel
+from domain.test import metric
 # ------------------------------------
 
 
-def main(config):
-    opt = config.model
-
-    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102213147]-melco_ddd'
-    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230103024327]-melco_ddd'
-    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
-    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062313]-remote3090_mmm'
-
-    model = 'melco_12_21_mmm'
-
+def main(opt, model):
     opt.model = model
-    opt.group = 'cdsvae_sprite'
-
     # ----------------------------------------------------------
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu
 
@@ -38,25 +28,16 @@ def main(config):
     else:
         raise ValueError('missing checkpoint')
 
-    log = os.path.join(log_dir, 'log.txt')
-    os.makedirs('%s/gen/' % log_dir, exist_ok=True)
-    os.makedirs('%s/plots/' % log_dir, exist_ok=True)
-    dtype = torch.cuda.FloatTensor
-
-    # print_log('Running parameters:')
-    # print_log(json.dumps(vars(opt), indent=4, separators=(',', ':')), log)
-
-    # --------- transfer to gpu ------------------------------------
-    if torch.cuda.device_count() > 1:
-        print_log("Let's use {} GPUs!".format(torch.cuda.device_count()), log)
-        cdsvae = nn.DataParallel(cdsvae)
-    cdsvae = cdsvae.cuda()
-    # print_log(cdsvae, log)
-
-    classifier   = classifier_Sprite_all(opt)
-    loaded_dict  = torch.load(opt.resume)
+    classifier  = classifier_Sprite_all(opt)
+    loaded_dict = torch.load(opt.resume)
     classifier.load_state_dict(loaded_dict['state_dict'])
-    classifier   = classifier.cuda().eval()
+    classifier  = classifier.cuda().eval()
+
+
+    acc_list  = []
+    IS_list   = []
+    H_yx_list = []
+    H_y_list  = []
 
     # --------- training loop ------------------------------------
     for epoch in range(opt.niter):
@@ -109,78 +90,64 @@ def main(config):
             mean_acc3_sample += acc3_sample
             mean_acc4_sample += acc4_sample
 
-        # print('Test sample: action_Acc: {:.2f}% skin_Acc: {:.2f}% pant_Acc: {:.2f}% top_Acc: {:.2f}% hair_Acc: {:.2f}% '.format(
-        #                                                mean_acc0_sample / len(test_loader)*100,
-        #                                                mean_acc1_sample / len(test_loader)*100, mean_acc2_sample / len(test_loader)*100,
-        #                                                mean_acc3_sample / len(test_loader)*100, mean_acc4_sample / len(test_loader)*100))
-
-        # import ipdb; ipdb.set_trace()
         label2_all = np.hstack(label2_all)  # label2_all = List[(num_batch,),(num_batch,),...]
         label_gt   = np.hstack(label_gt)
         pred1_all  = np.vstack(pred1_all)
         pred2_all  = np.vstack(pred2_all)
 
-        # import ipdb; ipdb.set_trace()
-        acc             = (label_gt == label2_all).mean()
-        kl              = KL_divergence(pred2_all, pred1_all)
+        acc = (label_gt == label2_all).mean()
+        # kl  = metric.KL_divergence(pred2_all, pred1_all)
 
         nSample_per_cls = min([(label_gt==i).sum() for i in np.unique(label_gt)])
         index           = np.hstack([np.nonzero(label_gt == i)[0][:nSample_per_cls] for i in np.unique(label_gt)]).squeeze()
         pred2_selected  = pred2_all[index]
 
-        IS              = inception_score(pred2_selected)
-        H_yx            = entropy_Hyx(pred2_selected)
-        H_y             = entropy_Hy(pred2_selected)
+        IS   = metric.inception_score(pred2_selected)
+        H_yx = metric.entropy_Hyx(pred2_selected)
+        H_y  = metric.entropy_Hy(pred2_selected)
 
-        # print('acc: {:.2f}%, kl: {:.4f}, IS: {:.4f}, H_yx: {:.4f}, H_y: {:.4f}'.format(acc*100, kl, IS, H_yx, H_y))
-        print('Epoch[{}/{}] : [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.4f}, {:.4f}, {:.4f}]'.format(
-            epoch, opt.niter, acc*100, IS, H_yx, H_y))
+        print('Epoch[{}/{}] : [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.4f}, {:.4f}, {:.4f}]'.format(epoch, opt.niter, acc*100, IS, H_yx, H_y))
+        acc_list.append(acc); IS_list.append(IS); H_yx_list.append(H_yx); H_y_list.append(H_y)
 
+    acc_list_mean  = np.mean(acc_list)
+    IS_list_mean   = np.mean(IS_list)
+    H_yx_list_mean = np.mean(H_yx_list)
+    H_y_list_mean  = np.mean(H_y_list)
 
-def entropy_Hy(p_yx, eps=1E-16):
-    p_y = p_yx.mean(axis=0)
-    sum_h = (p_y * np.log(p_y + eps)).sum() * (-1)
-    return sum_h
+    print("--------------------------------------------------------------------------")
+    print('model mean : [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.4f}, {:.4f}, {:.4f}]'.format(acc_list_mean*100, IS_list_mean, H_yx_list_mean, H_y_list_mean))
+    print("--------------------------------------------------------------------------")
+    return acc_list_mean, IS_list_mean, H_yx_list_mean, H_y_list_mean
 
-def entropy_Hyx(p, eps=1E-16):
-    sum_h = (p * np.log(p + eps)).sum(axis = 1)
-    # average over images
-    avg_h = np.mean(sum_h) * (-1)
-    return avg_h
-
-def inception_score(p_yx,  eps=1E-16):
-    # calculate p(y)
-    p_y = np.expand_dims(p_yx.mean(axis=0), 0)
-    # kl divergence for each image
-    kl_d = p_yx * (np.log(p_yx + eps) - np.log(p_y + eps))
-    # sum over classes
-    sum_kl_d = kl_d.sum(axis=1)
-    # average over images
-    avg_kl_d = np.mean(sum_kl_d)
-    # undo the logs
-    is_score = np.exp(avg_kl_d)
-    return is_score
-
-def KL_divergence(P, Q, eps=1E-16):
-    kl_d = P * (np.log(P + eps) - np.log(Q + eps))
-    # sum over classes
-    sum_kl_d = kl_d.sum(axis=1)
-    # average over images
-    avg_kl_d = np.mean(sum_kl_d)
-    return avg_kl_d
-
-def print_log(print_string, log=None):
-    print("{}".format(print_string))
-    if log is not None:
-        log = open(log, 'a')
-        log.write('{}\n'.format(print_string))
-        log.close()
 
 if __name__ == '__main__':
     import hydra
     from omegaconf import DictConfig, OmegaConf
     @hydra.main(version_base=None, config_path="../../conf", config_name="config_classifier")
     def get_config(cfg: DictConfig) -> None:
-        main(cfg)
+
+        import glob
+        group_name     = "cdsvae_sprite"
+
+        search_keyward = "melco_mmm"
+        # search_keyward = "remote3090_mmm"
+
+        log_dir        = os.path.join("/hdd_mount/logs_cdsvae", group_name)
+        model_list     = glob.glob('{}/*{}'.format(log_dir, search_keyward))
+
+        acc=[]; IS=[]; H_yx=[]; H_y=[]
+        for model in model_list:
+            # import ipdb; ipdb.set_trace()
+            _acc, _IS, _H_yx, _H_y = main(cfg.model, model)
+            acc.append(_acc); IS.append(_IS); H_yx.append(_H_yx); H_y.append(_H_y)
+
+        acc_mean  = np.mean(acc)
+        IS_mean   = np.mean(IS)
+        H_yx_mean = np.mean(H_yx)
+        H_y_mean  = np.mean(H_y)
+
+        import ipdb; ipdb.set_trace()
+        print('Overall Mean = [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.3f}, {:.3f}, {:.3f}]'.format(
+            acc_mean*100, IS_mean, H_yx_mean, H_y_mean))
 
     get_config()

@@ -1,6 +1,6 @@
 defaults:
-  - model    : classifier_sprite
-  - datamodule: sprite_JunwenBai
+  - model           : classifier_sprite
+  - datamodule      : sprite_JunwenBai
 
 reload:
   path:
