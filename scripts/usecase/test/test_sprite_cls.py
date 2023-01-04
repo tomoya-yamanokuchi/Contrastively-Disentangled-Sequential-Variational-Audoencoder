@@ -14,10 +14,14 @@ from domain.test.TestModel import TestModel
 def main(config):
     opt = config.model
 
-    opt.model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102213147]-melco_ddd'
-    opt.model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230103024327]-melco_ddd'
+    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102213147]-melco_ddd'
+    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230103024327]-melco_ddd'
+    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
+    model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062313]-remote3090_mmm'
 
-    opt.model  = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
+    model = 'melco_12_21_mmm'
+
+    opt.model = model
     opt.group = 'cdsvae_sprite'
 
     # ----------------------------------------------------------
@@ -116,7 +120,7 @@ def main(config):
         pred1_all  = np.vstack(pred1_all)
         pred2_all  = np.vstack(pred2_all)
 
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         acc             = (label_gt == label2_all).mean()
         kl              = KL_divergence(pred2_all, pred1_all)
 

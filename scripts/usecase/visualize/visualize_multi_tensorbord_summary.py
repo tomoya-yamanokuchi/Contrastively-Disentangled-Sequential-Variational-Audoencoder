@@ -8,7 +8,7 @@ from domain.visualize.MultipleTensorbordSummary2PandasDataset import MultipleTen
 name  = "cdsvae_action_norm_valve"
 board = MultipleTensorbordSummary2PandasDataset(logs="/hdd_mount/logs_cdsvae/", name=name)
 
-mode = True
+mode =
 if mode:
     # model_list = [
     #     "[c-dsvae]-[sprite_jb]-[dim_f=256]-[dim_z=32]-[100epoch]-[20221213002108]-[remote_3090]-momo",

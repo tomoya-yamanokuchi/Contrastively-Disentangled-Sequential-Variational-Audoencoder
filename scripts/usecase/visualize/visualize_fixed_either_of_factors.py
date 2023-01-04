@@ -11,6 +11,7 @@ import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
 model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230102200618]-melco_ooo'
 model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103071526]-melco_mmm'
+model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103062313]-remote3090_mmm'
 group = 'cdsvae_sprite'
 
 # ----------------------------------------------------------------------------------

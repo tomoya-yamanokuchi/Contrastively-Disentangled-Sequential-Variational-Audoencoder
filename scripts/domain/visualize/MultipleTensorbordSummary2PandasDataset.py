@@ -1,23 +1,39 @@
-from ntpath import join
 import os
-from unicodedata import name
 import pandas as pd
-import matplotlib.pyplot as plt
-from pprint import pprint
 import numpy as np
+from pprint import pprint
+
 # seabornのstyleに変更
 import seaborn as sns; sns.set()
 from typing import List
 from typing import Dict
 from pathlib import Path
 from natsort import natsorted
+import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+from .SummaryPlot import SummaryPlot
 
 
 class MultipleTensorbordSummary2PandasDataset:
     WALL_TIME = 0
     STEP      = 1
     VALUE     = 2
+
+    def y_MINMAX(self, tag):
+        minmax = {
+            "loss"            : (None, None),
+            "Train/mse"       : (None, None),
+            "Train/kld_f"     : (0, 100),
+            "Train/kld_z"     : (0, 100),
+            "Train/con_loss_c": (None, None),
+            "Train/con_loss_m": (None, None),
+            "Train/mi_fz"     : (0, None),
+        }
+        if tag in minmax.keys():
+            return minmax[tag]
+        else:
+            return (None, None)
+
 
     def __init__(self, logs: str, name: str) -> None:
         self.logs       = logs
@@ -27,7 +43,15 @@ class MultipleTensorbordSummary2PandasDataset:
         self.tags       = None
 
 
-    def get_scalars_as_pandas(self, model_list: List[str]) -> Dict:
+    def _get_model_list(self, search_keyward: str):
+        p          = pathlib.Path(self.log_dir)
+        path_list  = natsorted(list(p.glob("*")),key=lambda x:x.name)
+        model_list = [str(path).split("/")[-1] for path in path_list if search_keyward in str(path)]
+        return model_list
+
+
+    def get_scalars_as_pandas(self, search_keyward) -> Dict:
+        model_list = self._get_model_list(search_keyward)
         assert type(model_list) is list
         self.model_list = model_list
 
@@ -47,7 +71,7 @@ class MultipleTensorbordSummary2PandasDataset:
             tags       = event.Tags()["scalars"]
             if self.tags is None:
                 self.tags = tags
-            for tag in tags[3:]:
+            for tag in tags:
                 scalars = event.Scalars(tag)
                 data[model][tag] = []
 
@@ -60,11 +84,25 @@ class MultipleTensorbordSummary2PandasDataset:
         return pd.DataFrame(data).T # 行と列を入れ替え
 
 
-    def save_figure(self, output_dir: str, dataframe: pd.DataFrame, extention: str="png") -> None:
-        assert isinstance(output_dir, str)
-        assert isinstance(dataframe, pd.DataFrame)
-        assert isinstance(extention, str)
+    def save_figure(self, output_dir: str, dataframe_dict: dict) -> None:
+        dirname   = self._create_save_dir(output_dir)
+        num_model = self._get_number_of_model(dataframe_dict)
+        for tag in self.tags:
+            tag_for_save = '_'.join(tag.split("/"))
+            summary_plot = SummaryPlot(
+                xlabel  = "step",
+                ylabel  = tag_for_save,
+                title   = "Number of model = {}".format(num_model),
+                yminmax = self.y_MINMAX(tag)
+            )
+            for model_name, dataframe in dataframe_dict.items():
+                print(model_name, tag)
+                df = dataframe[tag]
+                summary_plot.plot_mean_std(df.to_dict(), legend_label=model_name)
+            summary_plot.save_fig(save_path=os.path.join(dirname, tag_for_save))
 
+
+    def _create_save_dir(self, output_dir):
         dir       = os.path.join(".", output_dir)
         path_obj  = Path(os.path.join(".", output_dir))
         path_list = natsorted(list(path_obj.glob("*")),key=lambda x:x.name)
@@ -78,70 +116,24 @@ class MultipleTensorbordSummary2PandasDataset:
             latest_path   = str(path_list[-1])
             latent_name   = latest_path.split("/")[-1]
             latent_number = latent_name[-3:]
+
+            print(latent_name)
+            print(latent_number)
+            print(int(latent_number))
+            print(str(int(latent_number) + 1))
             number        = str(int(latent_number) + 1).zfill(3)
             dirname       = os.path.join(dir, "{}_version_{}".format(self.name, number))
             os.makedirs(dirname)
-
-        Path(os.path.join(dirname, "all")).mkdir(parents=True, exist_ok=True)
-        Path(os.path.join(dirname, "mean_std")).mkdir(parents=True, exist_ok=True)
-
-        for tag in self.tags[3:]:
-            df           = dataframe[tag]
-            dict_summary = df.to_dict()
-            tag_for_save = '_'.join(tag.split("/"))
-
-            # plot_func[mode](save_path, dict_summary, label=tag)
-            self._save_plot_all(     save_path=f"{dirname}/all/{tag_for_save}.{extention}", dict_summary=dict_summary, label=tag)
-            self._save_plot_mean_std(save_path=f"{dirname}/mean_std/{tag_for_save}.{extention}", dict_summary=dict_summary, label=tag)
+        # Path(os.path.join(dirname, "all")).mkdir(parents=True, exist_ok=True)
+        # Path(os.path.join(dirname, "mean_std")).mkdir(parents=True, exist_ok=True)
+        return dirname
 
 
-    def _save_plot_all(self, save_path: str, dict_summary: dict, label: str):
-        fig, ax = plt.subplots(figsize=(8, 6))
-
-        for key, val in dict_summary.items():
-            ax.plot(val, label=key)
-
-        ax.set_xlabel("steps")
-        ax.set_ylabel(label)
-        # ax.set_title(title, y=1.05, pad=-14)
-        # ax.set_xlim(t_min, t_max)
-        # ax.set_ylim(t_min, t_max)
-        # ax.set_xticks([t_min, t_max])
-        # ax.set_yticks([t_min, t_max])
-
-        # lines, labels = fig.axes[-1].get_legend_handles_labels()
-        # fig.legend(lines, labels, loc = 'upper center', ncol=1, bbox_to_anchor=(0, 0.6, 0.9, 0.45), fontsize=10)
-        fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
-        fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
-        plt.close()
-
-
-    def _save_plot_mean_std(self, save_path: str, dict_summary: dict, label: str):
-        val_list = []
-        for key, val in dict_summary.items():
-            val_list.append(np.array(val))
-        x = np.stack(val_list)
-        num_list, num_data = x.shape
-
-        # mu and sigma
-        mu    = np.mean(x, axis=0)
-        std   = np.std(x, axis=0)
-        lower = mu - 2.0*std
-        upper = mu + 2.0*std
-        xx    = np.linspace(0, num_data-1, num_data)
-
-        # plot data
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.fill_between(xx, lower, upper, alpha=0.8, label="variance", color="skyblue")
-        ax.plot(xx, mu, color="b", label="mean")
-        # ax.plot(val, label=key)
-
-        ax.set_xlabel("steps")
-        ax.set_ylabel(label)
-        ax.set_title("Number of Model = {}".format(num_list))
-
-        # lines, labels = fig.axes[-1].get_legend_handles_labels()
-        # fig.legend(lines, labels, loc = 'upper center', ncol=2, bbox_to_anchor=(0, 0.6, 0.9, 0.45), fontsize=10)
-        fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
-        fig.savefig(save_path, bbox_inches='tight') #, pad_inches=0.1)
-        plt.close()
+    def _get_number_of_model(self, dataframe_dict: dict):
+        num_model = []
+        for model_name, dataframe in dataframe_dict.items():
+            num_model.append(len(dataframe))
+        num_model      = np.array(num_model)
+        num_model_mean = int(num_model.mean())
+        assert (num_model - num_model_mean).sum() == 0, print("diff = {}".format((num_model - num_model_mean)))
+        return num_model_mean
