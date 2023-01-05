@@ -36,7 +36,8 @@ loss:
     normalize: True
 
   mutual_information:
-    name : "JunwenBai"
+    # name : "JunwenBai"
+    name : "mylogdensity"
 
   weight:
     kld_context          : 1.0

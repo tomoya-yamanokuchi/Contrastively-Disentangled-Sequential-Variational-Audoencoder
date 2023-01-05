@@ -32,22 +32,22 @@ class MutualInformation_JunwenBai(nn.Module):
             raise ValueError('Must specify the dimension.')
 
 
-    # def log_density(self, mean, logvar, sample):
-    #     mu       = mean
-    #     logsigma = logvar
-    #     # -----------------------------------
-    #     mu = mu.type_as(sample)
-    #     logsigma = logsigma.type_as(sample)
-    #     c = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
-
-    #     inv_sigma = torch.exp(-logsigma)
-    #     tmp = (sample - mu) * inv_sigma
-    #     return -0.5 * (tmp * tmp + 2 * logsigma + c)
-
-
     def log_density(self, mean, logvar, sample):
-        c          = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
-        return -0.5 * (c + logvar + ((sample - mean)**2 * torch.exp(-logvar)))
+        mu       = mean
+        logsigma = logvar
+        # -----------------------------------
+        mu = mu.type_as(sample)
+        logsigma = logsigma.type_as(sample)
+        c = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
+
+        inv_sigma = torch.exp(-logsigma)
+        tmp = (sample - mu) * inv_sigma
+        return -0.5 * (tmp * tmp + 2 * logsigma + c)
+
+
+    # def log_density(self, mean, logvar, sample):
+    #     c          = torch.Tensor([np.log(2 * np.pi)]).type_as(sample.data)
+    #     return -0.5 * (c + logvar + ((sample - mean)**2 * torch.exp(-logvar)))
 
 
     def forward(self, f_dist, z_dist):
@@ -76,6 +76,7 @@ class MutualInformation_JunwenBai(nn.Module):
             sample = z_dist[2].transpose(0, 1).view(step, num_batch, 1, dim_z), # [8, 128, 1, 32]
         )
 
+        import ipdb; ipdb.set_trace()
         _logq_fz_tmp = torch.cat((_logq_f_tmp, _logq_z_tmp), dim=3) # [8, 128, 128, 288]
 
         logq_f  = (self.logsumexp(_logq_f_tmp.sum(3), dim=2, keepdim=False)  - math.log(num_batch * self.num_train)) # [8, 128]

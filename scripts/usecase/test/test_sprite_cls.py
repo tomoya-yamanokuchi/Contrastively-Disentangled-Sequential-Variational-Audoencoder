@@ -129,8 +129,9 @@ if __name__ == '__main__':
         import glob
         group_name     = "cdsvae_sprite"
 
-        search_keyward = "melco_mmm"
+        # search_keyward = "melco_mmm"
         # search_keyward = "remote3090_mmm"
+        search_keyward = "fixed_logdensity"
 
         log_dir        = os.path.join("/hdd_mount/logs_cdsvae", group_name)
         model_list     = glob.glob('{}/*{}'.format(log_dir, search_keyward))
@@ -146,7 +147,7 @@ if __name__ == '__main__':
         H_yx_mean = np.mean(H_yx)
         H_y_mean  = np.mean(H_y)
 
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         print('Overall Mean = [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.3f}, {:.3f}, {:.3f}]'.format(
             acc_mean*100, IS_mean, H_yx_mean, H_y_mean))
 
