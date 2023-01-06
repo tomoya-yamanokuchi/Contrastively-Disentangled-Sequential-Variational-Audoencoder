@@ -68,7 +68,6 @@ class MutualInformation_myfunc(nn.Module):
         f_mean, f_logvar, f_sample = f_dist
         z_mean, z_logvar, z_sample = z_dist
         '''
-
         # constant term: log(N*M)
         num_batch     = z_dist[0].shape[0]
         logNM         = torch.Tensor([np.log(self.num_train * num_batch)]).type_as(f_dist[0]) # ~= 13.9570 when N=9000, M=128
@@ -89,4 +88,4 @@ class MutualInformation_myfunc(nn.Module):
 
         # mutual information: I(f;z)
         mutual_info   = F.relu(Hf + Hz - Hfz)
-        return mutual_info
+        return (Hf, Hz, Hfz), mutual_info

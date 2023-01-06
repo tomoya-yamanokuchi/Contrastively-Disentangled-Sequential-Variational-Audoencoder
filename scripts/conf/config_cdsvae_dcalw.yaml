@@ -1,10 +1,10 @@
 defaults:
   - model     : c-dsvae
-  - datamodule: sprite_JunwenBai
+  - datamodule: action_norm_valve
 
 logger:
   save_dir         : "./logs/"
-  name             : "cdsvae_sprite"
+  name             : "cdsvae_dclaw"
   default_hp_metric: False
 
 experiment:
@@ -13,7 +13,7 @@ experiment:
 
 trainer:
   gpus                : [0]
-  max_epochs          : 100
+  max_epochs          : 300
   enable_progress_bar : True
   deterministic       : False
   log_every_n_steps   : 1
@@ -24,6 +24,20 @@ optimizer:
 
 scheduler:
   name: "none"
+
+loss:
+  contrastive_loss:
+    tau      : 0.5
+    normalize: True
+  mutual_information:
+    # name : "JunwenBai"
+    name : "mylogdensity"
+  weight:
+    kld_context          : 0.5
+    kld_dynamics         : 0.1
+    contrastive_loss_fx  : 10.0
+    contrastive_loss_zx  : 10.0
+    mutual_information_fz: 10.0
 
 checkpoint:
   every_n_epochs          : 50

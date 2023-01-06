@@ -11,10 +11,10 @@ do
     -v /home/$USER/workspace/Contrastively-Disentangled-Sequential-Variational-Audoencoder/scripts:/home/$USER/workspace/Contrastively-Disentangled-Sequential-Variational-Audoencoder \
     -v /home/$USER/workspace/dataset:/home/$USER/workspace/dataset \
     docker_c_dsvae python3.8 usecase/train/train.py \
-    model.loss.weight.kld_context=1.0 \
-    model.loss.weight.kld_dynamics=1.0 \
-    model.loss.weight.contrastive_loss_fx=0.0 \
-    model.loss.weight.contrastive_loss_zx=0.0 \
-    model.loss.weight.mutual_information_fz=0.0 \
+    loss.weight.kld_context=0.5 \
+    loss.weight.kld_dynamics=0.1 \
+    loss.weight.contrastive_loss_fx=0.0 \
+    loss.weight.contrastive_loss_zx=0.0 \
+    loss.weight.mutual_information_fz=0.0 \
     memo=$1
 done

@@ -28,20 +28,3 @@ network:
   motion_prior:
     state_dim  : 32
     hidden_dim : 256
-
-
-loss:
-  contrastive_loss:
-    tau      : 0.5
-    normalize: True
-
-  mutual_information:
-    # name : "JunwenBai"
-    name : "mylogdensity"
-
-  weight:
-    kld_context          : 1.0
-    kld_dynamics         : 1.0
-    contrastive_loss_fx  : 10.0
-    contrastive_loss_zx  : 10.0
-    mutual_information_fz: 1.0

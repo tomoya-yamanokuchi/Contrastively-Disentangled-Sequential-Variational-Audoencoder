@@ -23,11 +23,11 @@ class MultipleTensorbordSummary2PandasDataset:
         minmax = {
             "loss"            : (None, None),
             "Train/mse"       : (None, None),
-            "Train/kld_f"     : (0, 100),
-            "Train/kld_z"     : (0, 100),
+            "Train/kld_f"     : (0, 80),
+            "Train/kld_z"     : (0, 30),
             "Train/con_loss_c": (None, None),
             "Train/con_loss_m": (None, None),
-            "Train/mi_fz"     : (0, None),
+            "Train/mi_fz"     : (0, 6),
         }
         if tag in minmax.keys():
             return minmax[tag]

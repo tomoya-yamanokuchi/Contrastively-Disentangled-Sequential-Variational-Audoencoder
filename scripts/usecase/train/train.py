@@ -12,8 +12,11 @@ from domain.datamodule.DataModuleFactory import DataModuleFactory
 from domain.callbacks.CallbackTrainingTime import CallbackTrainingTime
 
 
+config_name = "config_cdsvae_sprite"
+config_name = "config_cdsvae_dcalw"
 
-@hydra.main(version_base=None, config_path="../../conf", config_name="config_cdsvae")
+
+@hydra.main(version_base=None, config_path="../../conf", config_name=config_name)
 def run(config: DictConfig) -> None:
     if config.experiment.manual_seed is not None:
         seed_everything(config.experiment.manual_seed, True)

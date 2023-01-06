@@ -34,7 +34,9 @@ class LitContrastivelyDisentangledSequentialVariationalAutoencoder(pl.LightningM
         self.save_hyperparameters()
         self.config       = config
         self.num_train    = num_train
-        self.model        = ContrastivelyDisentangledSequentialVariationalAutoencoder(**config.model, num_train=num_train)
+        self.model        = ContrastivelyDisentangledSequentialVariationalAutoencoder(
+            **config.model,  loss=config.loss, num_train=num_train
+        )
         self.summary_dict = None
 
 

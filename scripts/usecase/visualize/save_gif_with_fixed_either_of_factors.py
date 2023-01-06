@@ -28,7 +28,17 @@ model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[2023010
 # model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103091218]-remote3090_mmm'
 # model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103100839]-remote3090_mmm'
 
+# new my logdensity
+model = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230104212016]-melco_new_logdensity_cdsvae"
+model = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230104212018]-remote3090_new_logdensity_naive_dsvae"
+
 group = 'cdsvae_sprite'
+
+
+model = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105092135]-melco_dclaw_config_cdsvae_dclaw"
+model = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105092140]-remote3090_dclaw_config_cdsvae_dclaw"
+
+group = "cdsvae_dclaw"
 
 # ----------------------------------------------------------------------------------
 log_dir = "/hdd_mount/logs_cdsvae/{}/".format(group)
@@ -42,8 +52,8 @@ dataloader = test.load_dataloader()
 num_slice  = 1
 _step      = 0
 
-# fixed = "motion"
-fixed = "content"
+fixed = "motion"
+# fixed = "content"
 
 save_dir   = "./gif/{}".format(time.time())
 os.makedirs(save_dir, exist_ok=True)
@@ -76,7 +86,7 @@ for index, img_dict in dataloader:
                         x_sample = torchvision.utils.make_grid(x_sample, nrow=step, padding=0, pad_value=0.0, normalize=True)
 
                     x_sample = torch2numpy(x_sample)
-                    x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
+                    # x_sample = cv2.cvtColor(x_sample, cv2.COLOR_RGB2BGR)
                     images.append(x_sample)
 
                 elif fixed == "content" :
@@ -85,7 +95,7 @@ for index, img_dict in dataloader:
                     for t in range(step):
                         _x = torchvision.utils.make_grid(x_sample[t], nrow=1, padding=0, pad_value=0.0, normalize=True)
                         _x = torch2numpy(_x)
-                        _x = cv2.cvtColor(_x, cv2.COLOR_RGB2BGR)
+                        # _x = cv2.cvtColor(_x, cv2.COLOR_RGB2BGR)
                         images.append(_x)
                     images.append(np.zeros_like(_x))
             create_gif(

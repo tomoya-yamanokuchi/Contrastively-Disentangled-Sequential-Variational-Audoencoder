@@ -111,9 +111,9 @@ class ContrastivelyDisentangledSequentialVariationalAutoencoder(nn.Module):
         con_loss_c = self.contrastive_loss(f_mean, f_mean_c)
         con_loss_m = self.contrastive_loss(z_post_mean.view(batch_size, -1), z_post_mean_m.view(batch_size, -1))
 
-        f_dist = (f_mean, f_logvar, f)
-        z_dist = (z_post_mean, z_post_logvar, z_post)
-        mi_fz  = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
+        f_dist               = (f_mean, f_logvar, f)
+        z_dist               = (z_post_mean, z_post_logvar, z_post)
+        (Hf, Hz, Hfz), mi_fz = self.mutual_information(f_dist=f_dist, z_dist=z_dist)
 
         loss =  l_recon \
                 + kld_f * self.weight.kld_context \
@@ -130,6 +130,10 @@ class ContrastivelyDisentangledSequentialVariationalAutoencoder(nn.Module):
             "Train/con_loss_c": con_loss_c,
             "Train/con_loss_m": con_loss_m,
             "Train/mi_fz"     : mi_fz,
+            # --- add ---
+            "Entropy/Hf"      : Hf,
+            "Entropy/Hz"      : Hz,
+            "Entropy/Hfz"     : Hfz,
         }
 
 

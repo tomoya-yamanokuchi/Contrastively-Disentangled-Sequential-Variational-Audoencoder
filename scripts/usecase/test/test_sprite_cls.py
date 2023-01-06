@@ -131,7 +131,9 @@ if __name__ == '__main__':
 
         # search_keyward = "melco_mmm"
         # search_keyward = "remote3090_mmm"
-        search_keyward = "fixed_logdensity"
+        # search_keyward = "fixed_logdensity"
+        # search_keyward = "melco_new_logdensity_cdsvae"
+        search_keyward = "remote3090_new_logdensity_naive_dsvae"
 
         log_dir        = os.path.join("/hdd_mount/logs_cdsvae", group_name)
         model_list     = glob.glob('{}/*{}'.format(log_dir, search_keyward))
