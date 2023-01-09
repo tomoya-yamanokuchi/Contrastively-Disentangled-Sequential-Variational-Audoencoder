@@ -33,8 +33,8 @@ loss:
     # name : "JunwenBai"
     name : "mylogdensity"
   weight:
-    kld_context          : 0.5
-    kld_dynamics         : 0.1
+    kld_context          : 1
+    kld_dynamics         : 1
     contrastive_loss_fx  : 10.0
     contrastive_loss_zx  : 10.0
     mutual_information_fz: 10.0

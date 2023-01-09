@@ -63,6 +63,8 @@ def main(opt, model):
                 pred_action2, pred_skin2, pred_pant2, pred_top2, pred_hair2 = classifier(recon_x_sample)
                 pred_action3, pred_skin3, pred_pant3, pred_top3, pred_hair3 = classifier(recon_x)
 
+                import ipdb; ipdb.set_trace()
+
                 pred1 = F.softmax(pred_action1, dim = 1)
                 pred2 = F.softmax(pred_action2, dim = 1)
                 pred3 = F.softmax(pred_action3, dim = 1)
@@ -129,11 +131,15 @@ if __name__ == '__main__':
         import glob
         group_name     = "cdsvae_sprite"
 
-        # search_keyward = "melco_mmm"
+        search_keyward = "melco_mmm"
         # search_keyward = "remote3090_mmm"
         # search_keyward = "fixed_logdensity"
         # search_keyward = "melco_new_logdensity_cdsvae"
-        search_keyward = "remote3090_new_logdensity_naive_dsvae"
+        # search_keyward = "remote3090_new_logdensity_naive_dsvae"
+
+        '''
+        ＊古いモデルだと　loss=config.loss　のパラメータがないのでエラーになる
+        '''
 
         log_dir        = os.path.join("/hdd_mount/logs_cdsvae", group_name)
         model_list     = glob.glob('{}/*{}'.format(log_dir, search_keyward))
