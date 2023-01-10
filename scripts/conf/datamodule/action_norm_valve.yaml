@@ -1,9 +1,11 @@
 name     : "action_norm_valve"
-sub_name :
+sub_name : "for_cdsvae"
 data_dir : "../dataset/ActionNormalizedValve"
 
-# ctrl_type: "task_space_diff_position"
-ctrl_type: "joint_space_position"
+data_type:
+  # ctrl_type: "task_space_diff_position"
+  ctrl_type : "joint_space_position"
+  robot_state: "task_space_positioin"
 
 config_dataloader:
   train:
@@ -12,6 +14,13 @@ config_dataloader:
     drop_last  : True
     pin_memory : False
     num_workers: 0
+
+    train_for_test:
+      batch_size : 128
+      shuffle    : False
+      drop_last  : False
+      pin_memory : False
+      num_workers: 0
 
   val:
     batch_size : 128

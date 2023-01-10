@@ -17,7 +17,7 @@ class TestModel:
         lit_model       = lit_model_class.load_from_checkpoint(self.config.reload.path)
         lit_model.freeze()
         # print(lit_model.model.state_dict()["frame_decoder.deconv_fc.0.model.1.weight"])
-        return lit_model.eval().cuda()
+        return lit_model.eval().cuda(), self.config
 
     def load_dataloader(self, stage="test"):
         datamodule = DataModuleFactory().create(**self.config.datamodule)
