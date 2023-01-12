@@ -175,7 +175,7 @@ if __name__ == '__main__':
             logsumexp_p_y   = logsumexp(log_p_yx_matrix, dim=-1, keepdim=True) # sum over inner minibach (index j)
             H_y             = - torch.mean(logsumexp_p_y.squeeze() - torch.Tensor([np.log(N*N)]))
 
-            # print("[loss↓ , kl↓ , Hy↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(loss, kl, H_y))
+            # print("[Error↓ , KL↓ , H(y)↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(loss, kl, H_y))
 
             loss_list.append(loss)
             kl_list.append(kl)
@@ -184,7 +184,7 @@ if __name__ == '__main__':
         loss_mean = np.mean(loss_list)
         kl_mean   = np.mean(kl_list)
         H_y_mean  = np.mean(H_y_list)
-        print("     (model {}/{}) [loss↓ , kl↓ , Hy↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
+        print("     (model {}/{}) [Error↓ , KL↓ , H(y)↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
             m+1, len(model_cdsvae_list), loss_mean, kl_mean, H_y_mean))
 
         loss_total.append(loss_mean)
@@ -192,6 +192,6 @@ if __name__ == '__main__':
         H_y_total.append(H_y_mean)
 
     print("-----------------------------------------------------------------------")
-    print(" total mean (M={}) [loss↓ , kl↓ , Hy↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
+    print(" total mean (M={}) [Error↓ , KL↓ , H(y)↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
         len(model_cdsvae_list), np.mean(loss_total), np.mean(kl_total), np.mean(H_y_total)))
     print("-----------------------------------------------------------------------")
