@@ -7,6 +7,9 @@ from custom.visualize.VectorHeatmap import VectorHeatmap
 from custom.utility.reparameterize import reparameterize
 from custom.utility.image_converter import torch2numpy
 from custom.utility.normalize import normalize
+from custom.utility.to_numpy import to_numpy
+from custom.utility.logsumexp import logsumexp
+from custom.utility.log_density_z import log_density_z
 from custom.utility.create_gif import create_gif
 from custom.utility.reoder import reorder
 

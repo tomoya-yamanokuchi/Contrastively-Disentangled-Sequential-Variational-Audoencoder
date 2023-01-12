@@ -42,15 +42,15 @@ class ActionNormalizedValve_all_preload(VisionDataset):
             - max:  1.0
     '''
 
-    def __init__(self, data_dir: str, train: bool, ctrl_type: str):
+    def __init__(self, data_dir: str, train: bool, data_type: dict):
         self.data_dir              = data_dir
         self.train                 = train
-        self.ctrl_type             = ctrl_type
+        self.data_type             = data_type
         self.img_paths             = self._get_img_paths()
         self.num_data              = len(self.img_paths)
         self.min                   = 0
         self.max                   = 255
-        self.u_min, self.u_max     = get_uminmax(ctrl_type)
+        self.u_min, self.u_max     = get_uminmax(self.data_type["ctrl_type"])
         self.content_augumentation = ContentAugumentation()
         self.motion_augumentation  = MotionAugumentation(min=self.min, max=self.max)
         self.__all_preload()
@@ -80,7 +80,7 @@ class ActionNormalizedValve_all_preload(VisionDataset):
             img_numpy           = db["image"]["canonical"]                   # 複数ステップ分が含まれている(1系列分)
 
             # import ipdb; ipdb.set_trace()
-            ctrl                = db["ctrl"][self.ctrl_type]
+            ctrl                = db["ctrl"][self.data_type["ctrl_type"]]
 
             step, width, height, channel = img_numpy.shape                   # channlの順番に注意（保存形式に依存する）
             assert channel == 3
