@@ -18,7 +18,7 @@ from custom import to_numpy
 from custom import reparameterize
 from custom import logsumexp
 from custom import log_density_z
-
+from custom import save_image
 
 class TestDClaw:
     def load_model(self, group, model):
@@ -43,79 +43,6 @@ class TestDClaw:
         datamodule = DataModuleFactory().create(**self.config_eval.datamodule)
         datamodule.setup(stage="test")
         self.test_dataloader = datamodule.test_dataloader()
-
-
-    # def get_evaluator_predictive_distribution(self):
-    #     mean   = []
-    #     var    = []
-    #     y_true = []
-    #     for index, data in self.train_dataloader:
-    #         x = data['input']  # image
-    #         y = data['output'] # state
-
-    #         recon_x_sample, recon_x = self.model.forward_fixed_motion_for_classification(x)
-    #         results_dict = self.evaluator.forward(x)
-    #         # results_dict = self.evaluator.forward(recon_x_sample)
-
-    #         # convert from tensor to numpy
-    #         y             = to_numpy(y)
-    #         mean_ensemble = to_numpy(results_dict["mean"])
-    #         var_ensemble  = to_numpy(results_dict["var"])
-
-    #         # calculate predictive distribution
-    #         mean_pred = mean_ensemble.mean(axis=0)
-    #         var_pred  = (var_ensemble + mean_ensemble**2).mean(axis=0) - mean_pred**2
-
-    #         mean.append(mean_pred)
-    #         var.append(var_pred)
-    #         y_true.append(y)
-
-    #     mean        = np.concatenate(mean, axis=0)
-    #     var         = np.concatenate(var, axis=0)
-    #     self.y_true = np.concatenate(y_true, axis=0)
-
-    #     # ----------------------
-    #     # import ipdb; ipdb.set_trace()
-    #     # num_batch, step, dim_y = mean.shape
-    #     # x = np.linspace(1, step, step)
-
-    #     # # << plot data: indivisdual mean and variance >>
-    #     # sin_plot = DClawDataPlot(xlabel="x", ylabel="y", title="y=sin(x)")
-    #     # # sin_plot.plot_true_function(x, y[index])
-    #     # for n in range(mean.shape[0]):
-    #     #     # import ipdb; ipdb.set_trace()
-    #     #     sin_plot.plot_prediction(x, mean[n], np.sqrt(var[n]))
-    #     # sin_plot.save_fig('./all_train_mean_var.png')
-    #     # import ipdb; ipdb.set_trace()
-    #     # ----------------------
-    #     return (mean, var)
-
-
-    def log_marginal_predictive_density(self, log_density_yx):
-        # import ipdb; ipdb.set_trace()
-        logsumexp_p_yx = logsumexp(torch.Tensor(log_density_yx), dim=0, keepdim=False)
-        log_py         = to_numpy(logsumexp_p_yx) - np.log(mean_yx.shape[0])
-        return log_py
-
-
-    # def log_marginal_predictive_density(self, mean_yx, var_yx, num_sampling=100):
-    #     log_py_samples = [self._log_marginal_predictive_density(mean_yx, var_yx) for i in range(num_sampling)]
-    #     return np.array(log_py_samples)
-
-
-    def log_gaussian_density(self, mean, var, sample):
-        dim         = mean.shape[-1]
-        c           = dim * np.log(2*np.pi)
-        y           = sample - mean
-        y_sigma     = y / np.sqrt(var)
-        log_density = -0.5 * (c + np.log(var).sum(axis=-1) + (y_sigma**2).sum(axis=-1))
-        return log_density.sum(-1) # sum over timestep
-
-
-    def get_log_gaussian_density(self, mean_yx, var_yx):
-        sample_yx      = self.reparameterize(mean_yx, np.log(var_yx))
-        log_density_yx = self.log_gaussian_density(mean_yx, var_yx, sample_yx)
-        return log_density_yx
 
 
     def evaluate(self):
@@ -171,6 +98,22 @@ class TestDClaw:
         ensemble_mean = np.concatenate(ensemble_mean, axis=0)
         ensemble_var  = np.concatenate(ensemble_var, axis=0)
         y_true        = np.concatenate(y_true, axis=0)
+
+        # ----------------------
+        #     plot ensemble
+        # ----------------------
+        num_batch, step, dim_y = ensemble_mean.shape
+        xx       = np.linspace(1, step, step)
+        sin_plot = DClawDataPlot(xlabel="x", ylabel="y", title="y=sin(x)")
+        for n in range(ensemble_mean.shape[0]):
+            sin_plot.plot_prediction(xx, ensemble_mean[n], np.sqrt(ensemble_var[n]))
+        sin_plot.save_fig('./all_train_mean_var.png')
+        # import ipdb; ipdb.set_trace()
+        # ----------------------
+        num_save_image = 24
+        save_image(save_path="./x.png", image=x[:num_save_image])
+        save_image(save_path="./x_gen.png", image=x_gen[:num_save_image])
+
         return {
             "z_mean_x"     : z_mean_x,
             "z_logvar_x"   : z_logvar_x,
@@ -183,48 +126,72 @@ class TestDClaw:
 
 
 if __name__ == '__main__':
+    # model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105142322]-melco_dclaw_config_cdsvae_dclaw"
+    # model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105144151]-remote3090_dclaw_config_cdsvae_dclaw"
 
-    model_model = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105142322]-melco_dclaw_config_cdsvae_dclaw"
-    group_model = "cdsvae_dclaw"
+    # search_key        = "melco"
+    search_key        = "remote3090"
 
-    model_eval  = "[regressor_dclaw]-[action_norm_valve]-[dim_out=8]-[dim_fc_hidden=256]-[100epoch]-[num_batch=128]-[beta=0.5]-[20230109222005]-[melco]-"
-    group_eval  = "regressor_dclaw"
+    group_model       = "cdsvae_dclaw"
+    pathlib_obj       = pathlib.Path("/hdd_mount/logs_cdsvae/{}".format(group_model))
+    model_cdsvae_list = [str(model).split("/")[-1] for model in list(pathlib_obj.glob("*")) if search_key in str(model)]
 
-    test        = TestDClaw()
-    test.load_model(group=group_model, model=model_model)
-    test.load_evaluator(group=group_eval, model=model_eval)
-    test.load_evaluation_dataset()
+    num_eval_per_model = 5
 
+    loss_total = []
+    kl_total   = []
+    H_y_total  = []
 
-    loss_list = []
-    kl_list   = []
-    H_y_list  = []
-    for i in range(5):
-        result_dict = test.evaluate()
+    for m, model_cdsvae in enumerate(model_cdsvae_list):
 
-        loss = (result_dict["y_true"] - result_dict["ensemble_mean"]).sum(-1).mean(axis=-1).mean(axis=-1)
+        model_eval  = "[regressor_dclaw]-[action_norm_valve]-[dim_out=8]-[dim_fc_hidden=256]-[100epoch]-[num_batch=128]-[beta=0.5]-[20230109222005]-[melco]-"
+        group_eval  = "regressor_dclaw"
 
-        kl = metric.kl_divergence(
-            q = (result_dict["z_mean_gen"], result_dict["z_logvar_gen"]),
-            p = (result_dict["z_mean_x"], result_dict["z_logvar_x"]),
-        )
+        test        = TestDClaw()
+        test.load_model(group=group_model, model=model_cdsvae)
+        test.load_evaluator(group=group_eval, model=model_eval)
+        test.load_evaluation_dataset()
 
-        # << ensemble entropy>>
-        ensemble_mean   = result_dict["ensemble_mean"]
-        ensemble_var    = result_dict["ensemble_var"]
-        sample_p_yx     = reparameterize(mean=torch.Tensor(ensemble_mean), logvar=torch.Tensor(np.log(ensemble_var)))
-        sample_p_yx     = to_numpy(sample_p_yx)
-        N               = ensemble_mean.shape[0]
-        log_p_yx_matrix = log_density_z(mean=torch.Tensor(ensemble_mean), logvar=torch.Tensor(np.log(ensemble_var)), sample=torch.Tensor(sample_p_yx))
-        logsumexp_p_y   = logsumexp(log_p_yx_matrix, dim=-1, keepdim=True) # sum over inner minibach (index j)
-        H_y             = - torch.mean(logsumexp_p_y.squeeze() - torch.Tensor([np.log(N*N)]))
+        loss_list = []
+        kl_list   = []
+        H_y_list  = []
+        for i in range(num_eval_per_model):
+            result_dict = test.evaluate()
 
-        print("[loss, kl, Hy] = [{:.3f}, {:.2f}, {:.2f}]".format(loss, kl, H_y))
+            loss = (result_dict["y_true"] - result_dict["ensemble_mean"]).sum(-1).mean(axis=-1).mean(axis=-1)
 
-        loss_list.append(loss)
-        kl_list.append(kl)
-        H_y_list.append(H_y)
+            kl = metric.kl_divergence(
+                q = (result_dict["z_mean_gen"], result_dict["z_logvar_gen"]),
+                p = (result_dict["z_mean_x"], result_dict["z_logvar_x"]),
+            )
 
-    print("-------------------    mean   ------------------------")
-    print("[loss, kl, Hy] = [{:.3f}, {:.2f}, {:.2f}]".format(np.mean(loss_list), np.mean(kl_list), np.mean(H_y_list)))
-    print("------------------------------------------------------")
+            # << ensemble entropy>>
+            ensemble_mean   = result_dict["ensemble_mean"]
+            ensemble_var    = result_dict["ensemble_var"]
+            sample_p_yx     = reparameterize(mean=torch.Tensor(ensemble_mean), logvar=torch.Tensor(np.log(ensemble_var)))
+            sample_p_yx     = to_numpy(sample_p_yx)
+            N               = ensemble_mean.shape[0]
+            log_p_yx_matrix = log_density_z(mean=torch.Tensor(ensemble_mean), logvar=torch.Tensor(np.log(ensemble_var)), sample=torch.Tensor(sample_p_yx))
+            logsumexp_p_y   = logsumexp(log_p_yx_matrix, dim=-1, keepdim=True) # sum over inner minibach (index j)
+            H_y             = - torch.mean(logsumexp_p_y.squeeze() - torch.Tensor([np.log(N*N)]))
+
+            # print("[loss↓ , kl↓ , Hy↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(loss, kl, H_y))
+
+            loss_list.append(loss)
+            kl_list.append(kl)
+            H_y_list.append(H_y)
+
+        loss_mean = np.mean(loss_list)
+        kl_mean   = np.mean(kl_list)
+        H_y_mean  = np.mean(H_y_list)
+        print("     (model {}/{}) [loss↓ , kl↓ , Hy↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
+            m+1, len(model_cdsvae_list), loss_mean, kl_mean, H_y_mean))
+
+        loss_total.append(loss_mean)
+        kl_total.append(kl_mean)
+        H_y_total.append(H_y_mean)
+
+    print("-----------------------------------------------------------------------")
+    print(" total mean (M={}) [loss↓ , kl↓ , Hy↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
+        len(model_cdsvae_list), np.mean(loss_total), np.mean(kl_total), np.mean(H_y_total)))
+    print("-----------------------------------------------------------------------")
