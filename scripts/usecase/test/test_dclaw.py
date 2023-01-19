@@ -58,34 +58,37 @@ class TestDClaw:
         for index, data in self.test_dataloader:
             x = data['input']  # image
             y = data['output'] # state
+
+            y = to_numpy(y)
+
             # -------------------------------------------------
             #             get motion dist q(z|x)
             # -------------------------------------------------
-            # << encode original data >>
-            _, (z_mean, z_logvar, z_sample) = self.model.encode(x)
-            z_mean_x.append(to_numpy(z_mean))
-            z_logvar_x.append(to_numpy(z_logvar))
+            num_f_sampling = 25
+            for i in range(num_f_sampling):
+                # << encode original data >>
+                _, (z_mean, z_logvar, z_sample) = self.model.encode(x)
+                z_mean_x.append(to_numpy(z_mean))
+                z_logvar_x.append(to_numpy(z_logvar))
+                # << generate new data and encode again>>
+                x_gen = self.model.forward_fixed_motion(z_sample)
+                _, (z_mean, z_logvar, z_sample) = self.model.encode(x_gen)
+                z_mean_gen.append(to_numpy(z_mean))
+                z_logvar_gen.append(to_numpy(z_logvar))
 
-            # << generate new data and encode again>>
-            x_gen = self.model.forward_fixed_motion(z_sample)
-            _, (z_mean, z_logvar, z_sample) = self.model.encode(x_gen)
-            z_mean_gen.append(to_numpy(z_mean))
-            z_logvar_gen.append(to_numpy(z_logvar))
-
-            # -------------------------------------------------
-            #              ensemble prediction
-            # -------------------------------------------------
-            result_ensemble = self.evaluator.forward(x_gen)
-            y               = to_numpy(y)
-            mean_ensemble   = to_numpy(result_ensemble["mean"])
-            var_ensemble    = to_numpy(result_ensemble["var"])
-            # << calculate predictive distribution >>
-            mean_pred       = mean_ensemble.mean(axis=0)
-            var_pred        = (var_ensemble + mean_ensemble**2).mean(axis=0) - mean_pred**2
-            # << append data >>
-            ensemble_mean.append(mean_pred)
-            ensemble_var.append(var_pred)
-            y_true.append(y)
+                # -------------------------------------------------
+                #              ensemble prediction
+                # -------------------------------------------------
+                result_ensemble = self.evaluator.forward(x_gen)
+                mean_ensemble   = to_numpy(result_ensemble["mean"])
+                var_ensemble    = to_numpy(result_ensemble["var"])
+                # << calculate predictive distribution >>
+                mean_pred       = mean_ensemble.mean(axis=0)
+                var_pred        = (var_ensemble + mean_ensemble**2).mean(axis=0) - mean_pred**2
+                # << append data >>
+                ensemble_mean.append(mean_pred)
+                ensemble_var.append(var_pred)
+                y_true.append(y)
         # -------------------------------------------------
         #              ensemble prediction
         # -------------------------------------------------
@@ -102,15 +105,16 @@ class TestDClaw:
         # ----------------------
         #     plot ensemble
         # ----------------------
-        num_batch, step, dim_y = ensemble_mean.shape
-        xx       = np.linspace(1, step, step)
-        sin_plot = DClawDataPlot(xlabel="x", ylabel="y", title="y=sin(x)")
-        for n in range(ensemble_mean.shape[0]):
+        _, step, dim_y = ensemble_mean.shape
+        xx             = np.linspace(1, step, step)
+        sin_plot       = DClawDataPlot(xlabel="x", ylabel="y", title="y=sin(x)")
+        # import ipdb; ipdb.set_trace()
+        for n in range(self.test_dataloader.dataset.num_data):
             sin_plot.plot_prediction(xx, ensemble_mean[n], np.sqrt(ensemble_var[n]))
         sin_plot.save_fig('./all_train_mean_var.png')
         # import ipdb; ipdb.set_trace()
         # ----------------------
-        num_save_image = 24
+        num_save_image = 8*4
         save_image(save_path="./x.png", image=x[:num_save_image])
         save_image(save_path="./x_gen.png", image=x_gen[:num_save_image])
 
@@ -136,7 +140,7 @@ if __name__ == '__main__':
     pathlib_obj       = pathlib.Path("/hdd_mount/logs_cdsvae/{}".format(group_model))
     model_cdsvae_list = [str(model).split("/")[-1] for model in list(pathlib_obj.glob("*")) if search_key in str(model)]
 
-    num_eval_per_model = 5
+    num_eval_per_model = 1
 
     loss_total = []
     kl_total   = []

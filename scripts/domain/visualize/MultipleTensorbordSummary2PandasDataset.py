@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 from pprint import pprint
+import time
 
 # seabornのstyleに変更
 import seaborn as sns; sns.set()
@@ -23,11 +24,11 @@ class MultipleTensorbordSummary2PandasDataset:
         minmax = {
             "loss"            : (None, None),
             "Train/mse"       : (None, None),
-            "Train/kld_f"     : (0, 80),
-            "Train/kld_z"     : (0, 30),
+            "Train/kld_f"     : (0, 250),
+            "Train/kld_z"     : (0, 1000),
             "Train/con_loss_c": (None, None),
-            "Train/con_loss_m": (None, None),
-            "Train/mi_fz"     : (0, 6),
+            "Train/con_loss_m": (None, 5.4),
+            "Train/mi_fz"     : (0, 10),
         }
         if tag in minmax.keys():
             return minmax[tag]
@@ -115,14 +116,16 @@ class MultipleTensorbordSummary2PandasDataset:
             # すでにあれば追加して作る
             latest_path   = str(path_list[-1])
             latent_name   = latest_path.split("/")[-1]
-            latent_number = latent_name[-3:]
+            # latent_number = latent_name[]
 
-            print(latent_name)
-            print(latent_number)
-            print(int(latent_number))
-            print(str(int(latent_number) + 1))
-            number        = str(int(latent_number) + 1).zfill(3)
-            dirname       = os.path.join(dir, "{}_version_{}".format(self.name, number))
+            # print(latent_name)
+            # print(latent_number)
+            # print(int(latent_number))
+            # print(str(int(latent_number) + 1))
+            # number        = str(int(latent_number) + 1).zfill(3)
+            # dirname       = os.path.join(dir, "{}_version_{}".format(self.name, number))
+            dirname = os.path.join(dir, "{}_{}".format(self.name, time.time()))
+            # import ipdb; ipdb.set_trace()
             os.makedirs(dirname)
         # Path(os.path.join(dirname, "all")).mkdir(parents=True, exist_ok=True)
         # Path(os.path.join(dirname, "mean_std")).mkdir(parents=True, exist_ok=True)
