@@ -13,7 +13,7 @@ from domain.callbacks.CallbackTrainingTime import CallbackTrainingTime
 
 
 config_name = "config_cdsvae_sprite"
-config_name = "config_cdsvae_dcalw"
+# config_name = "config_cdsvae_dcalw"
 
 
 @hydra.main(version_base=None, config_path="../../conf", config_name=config_name)

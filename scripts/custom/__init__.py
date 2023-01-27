@@ -13,5 +13,7 @@ from custom.utility.log_density_z import log_density_z
 from custom.utility.create_gif import create_gif
 from custom.utility.reoder import reorder
 from custom.utility.save_image import save_image
+from custom.utility.save_image_as_gif import save_image_as_gif
+
 
 __version__ = '0.1.0'

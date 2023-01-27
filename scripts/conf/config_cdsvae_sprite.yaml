@@ -1,11 +1,10 @@
 defaults:
   - model     : c-dsvae
-  # - datamodule: sprite_JunwenBai
-  - datamodule: action_norm_valve
+  - datamodule: sprite_JunwenBai
 
 logger:
   save_dir         : "./logs/"
-  name             : "cdsvae_dclaw"
+  name             : "cdsvae_sprite_2"
   default_hp_metric: False
 
 experiment:
@@ -44,7 +43,8 @@ checkpoint:
   every_n_epochs          : 50
   save_top_k              : -1
   save_last               : True
-  monitor                 : "loss"
+  # save_on_train_epoch_end : True
+  # monitor                 : "loss"
 
 reload:
   path:

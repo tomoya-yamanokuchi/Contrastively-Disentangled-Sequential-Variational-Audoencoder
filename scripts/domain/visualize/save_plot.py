@@ -62,3 +62,16 @@ def get_mu_and_bound(x):
 def ax_plot_mu_std(ax, x, mu, lower, upper):
     ax.fill_between(x, lower, upper, alpha=0.8, label="variance", color="skyblue")
     ax.plot(x, mu, color="b", label="mean")
+
+
+
+
+def plot_2D_latent_space(x, c, save_path):
+    plt.figure(figsize=(13, 10))
+    plt.scatter(x[:, 0], x[:, 1],
+        c=c, cmap='jet',
+        s=100, alpha=0.5
+    )
+    # plt.axis('off')
+    plt.colorbar()
+    plt.savefig(save_path)

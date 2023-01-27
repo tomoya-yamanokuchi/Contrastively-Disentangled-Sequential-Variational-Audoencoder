@@ -92,10 +92,11 @@ class LitContrastivelyDisentangledSequentialVariationalAutoencoder(pl.LightningM
             results_dict              = results_dict,
             results_dict_aug_context  = results_dict_aug_context,
             results_dict_aug_dynamics = results_dict_aug_dynamics,
+            step_mode                 = "train"
         )
-        self.log("index_0", index[0])
+        self.log("index_0/train", index[0])
         self.log_dict({key: val.item() for key, val in loss.items()}, sync_dist=True)
-        return loss['loss']
+        return loss["train/loss/loss"]
 
 
     def validation_step(self, batch, batch_idx):
@@ -114,8 +115,10 @@ class LitContrastivelyDisentangledSequentialVariationalAutoencoder(pl.LightningM
             results_dict              = results_dict,
             results_dict_aug_context  = results_dict_aug_context,
             results_dict_aug_dynamics = results_dict_aug_dynamics,
+            step_mode                 = "valid"
         )
-        self.log("val_loss", loss["loss"])
+        self.log("index_0/valid", index[0])
+        self.log_dict({key: val.item() for key, val in loss.items()}, sync_dist=True)
         if batch_idx == 0:
             self.save_progress(
                 *(x, c_aug, m_aug),

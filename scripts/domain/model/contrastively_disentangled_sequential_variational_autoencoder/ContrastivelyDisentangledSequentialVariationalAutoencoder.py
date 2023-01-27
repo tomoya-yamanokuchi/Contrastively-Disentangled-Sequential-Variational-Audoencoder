@@ -77,6 +77,7 @@ class ContrastivelyDisentangledSequentialVariationalAutoencoder(nn.Module):
                         results_dict             ,
                         results_dict_aug_context ,
                         results_dict_aug_dynamics,
+                        step_mode,
                         **kwargs) -> dict:
 
         f_mean         = results_dict["f_mean"]
@@ -123,17 +124,17 @@ class ContrastivelyDisentangledSequentialVariationalAutoencoder(nn.Module):
                 + con_loss_m * self.weight.contrastive_loss_zx
 
         return {
-            "loss"            : loss,
-            "Train/mse"       : l_recon,
-            "Train/kld_f"     : kld_f,
-            "Train/kld_z"     : kld_z,
-            "Train/con_loss_c": con_loss_c,
-            "Train/con_loss_m": con_loss_m,
-            "Train/mi_fz"     : mi_fz,
+            "{}/loss/loss"        .format(step_mode) : loss,
+            "{}/loss/l_recon"     .format(step_mode) : l_recon,
+            "{}/loss/kld_f"       .format(step_mode) : kld_f,
+            "{}/loss/kld_z"       .format(step_mode) : kld_z,
+            "{}/loss/con_loss_c"  .format(step_mode) : con_loss_c,
+            "{}/loss/con_loss_m"  .format(step_mode) : con_loss_m,
+            "{}/loss/mi_fz"       .format(step_mode) : mi_fz,
             # --- add ---
-            "Entropy/Hf"      : Hf,
-            "Entropy/Hz"      : Hz,
-            "Entropy/Hfz"     : Hfz,
+            "{}/Entropy/Hf"       .format(step_mode) : Hf,
+            "{}/Entropy/Hz"       .format(step_mode) : Hz,
+            "{}/Entropy/Hfz"      .format(step_mode) : Hfz,
         }
 
 
