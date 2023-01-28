@@ -10,10 +10,11 @@ import sys; import pathlib; p=pathlib.Path("./"); sys.path.append(str(p.parent.r
 from domain.model.ModelFactory import ModelFactory
 from domain.datamodule.DataModuleFactory import DataModuleFactory
 from domain.callbacks.CallbackTrainingTime import CallbackTrainingTime
+from custom import get_pc_name
 
-
-config_name = "config_cdsvae_sprite"
-# config_name = "config_cdsvae_dcalw"
+# config_name = "config_cdsvae_sprite"
+# config_name = "config_cdsvae_dclaw"
+config_name = "config_cdsvae_dclaw_deterministic"
 
 
 @hydra.main(version_base=None, config_path="../../conf", config_name=config_name)
@@ -31,13 +32,14 @@ def run(config: DictConfig) -> None:
     lit_model       = lit_model_class(config, num_train=data.num_train)
 
     tb_logger = TensorBoardLogger(
-        version  = '[{}]-[{}]-[dim_f={}]-[dim_z={}]-[{}epoch]-[{}]-{}'.format(
+        version  = '[{}]-[{}]-[dim_f={}]-[dim_z={}]-[{}epoch]-[{}]-[{}]-{}'.format(
             config.model.name,
             config.datamodule.name,
             config.model.network.context_encoder.context_dim,
             config.model.network.motion_encoder.state_dim,
             config.trainer.max_epochs,
             datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+            get_pc_name(),
             config.memo,
         ),
         **config.logger

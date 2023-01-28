@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from omegaconf import DictConfig, OmegaConf
-
 # ------------------------------------
 import sys; import pathlib; p=pathlib.Path("./"); sys.path.append(str(p.parent.resolve()))
 from domain.datamodule.DataModuleFactory import DataModuleFactory
@@ -19,6 +18,7 @@ from custom import reparameterize
 from custom import logsumexp
 from custom import log_density_z
 from custom import save_image
+
 
 class TestDClaw:
     def load_model(self, group, model):
@@ -133,10 +133,12 @@ if __name__ == '__main__':
     # model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105142322]-melco_dclaw_config_cdsvae_dclaw"
     # model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=256]-[dim_z=32]-[300epoch]-[20230105144151]-remote3090_dclaw_config_cdsvae_dclaw"
 
-    # search_key        = "melco"
-    search_key        = "remote3090"
+    # search_key = "melco"
+    # search_key = "remote3090"
+    search_key = "remote_tsukumo3090ti"
+    search_key = "remote_3090"
 
-    group_model       = "cdsvae_dclaw"
+    group_model       = "cdsvae_dclaw_deterministic"
     pathlib_obj       = pathlib.Path("/hdd_mount/logs_cdsvae/{}".format(group_model))
     model_cdsvae_list = [str(model).split("/")[-1] for model in list(pathlib_obj.glob("*")) if search_key in str(model)]
 
@@ -144,6 +146,7 @@ if __name__ == '__main__':
 
     loss_total = []
     kl_total   = []
+    Hyx_total  = []
     H_y_total  = []
 
     for m, model_cdsvae in enumerate(model_cdsvae_list):
@@ -157,12 +160,15 @@ if __name__ == '__main__':
         test.load_evaluation_dataset()
 
         loss_list = []
+        Hyx_list  = []
         kl_list   = []
         H_y_list  = []
         for i in range(num_eval_per_model):
             result_dict = test.evaluate()
 
-            loss = (result_dict["y_true"] - result_dict["ensemble_mean"]).sum(-1).mean(axis=-1).mean(axis=-1)
+            loss = ((result_dict["y_true"] - result_dict["ensemble_mean"])**2).sum(-1).mean(axis=-1).mean(axis=-1) # L2-norm
+
+            Hyx = metric.entropy_Hyx(var_yx=result_dict["ensemble_var"])
 
             kl = metric.kl_divergence(
                 q = (result_dict["z_mean_gen"], result_dict["z_logvar_gen"]),
@@ -170,32 +176,37 @@ if __name__ == '__main__':
             )
 
             # << ensemble entropy>>
-            ensemble_mean   = result_dict["ensemble_mean"]
-            ensemble_var    = result_dict["ensemble_var"]
-            sample_p_yx     = reparameterize(mean=torch.Tensor(ensemble_mean), logvar=torch.Tensor(np.log(ensemble_var)))
-            sample_p_yx     = to_numpy(sample_p_yx)
+            ensemble_mean   = torch.Tensor(result_dict["ensemble_mean"])
+            ensemble_var    = torch.Tensor(result_dict["ensemble_var"])
+            sample_p_yx     = reparameterize(mean=ensemble_mean, logvar=ensemble_var.log())
             N               = ensemble_mean.shape[0]
-            log_p_yx_matrix = log_density_z(mean=torch.Tensor(ensemble_mean), logvar=torch.Tensor(np.log(ensemble_var)), sample=torch.Tensor(sample_p_yx))
+            log_p_yx_matrix = log_density_z(mean=ensemble_mean, logvar=ensemble_var.log(), sample=sample_p_yx)
             logsumexp_p_y   = logsumexp(log_p_yx_matrix, dim=-1, keepdim=True) # sum over inner minibach (index j)
             H_y             = - torch.mean(logsumexp_p_y.squeeze() - torch.Tensor([np.log(N*N)]))
 
             # print("[Error↓ , KL↓ , H(y)↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(loss, kl, H_y))
 
             loss_list.append(loss)
+            Hyx_list.append(Hyx)
             kl_list.append(kl)
             H_y_list.append(H_y)
-
-        loss_mean = np.mean(loss_list)
-        kl_mean   = np.mean(kl_list)
-        H_y_mean  = np.mean(H_y_list)
-        print("     (model {}/{}) [Error↓ , KL↓ , H(y)↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
-            m+1, len(model_cdsvae_list), loss_mean, kl_mean, H_y_mean))
+        # ------------------------------------------
+        # import ipdb; ipdb.set_trace()
+        loss_mean        = np.mean(loss_list)
+        Hyx_mean         = np.mean(Hyx_list)
+        kl_mean          = np.mean(kl_list)
+        H_y_mean         = np.mean(H_y_list)
+        print("     (model {}/{}) [Error↓ , KL↓ , H(y|x)↓ , H(y)↑ ] = [{:.3f}, {:.3f}, {:.2f}, {:.2f}] : {}".format(
+            m+1, len(model_cdsvae_list), loss_mean, kl_mean, Hyx_mean, H_y_mean, model_cdsvae))
 
         loss_total.append(loss_mean)
+        Hyx_total.append(Hyx_mean)
         kl_total.append(kl_mean)
         H_y_total.append(H_y_mean)
 
     print("-----------------------------------------------------------------------")
-    print(" total mean (M={}) [Error↓ , KL↓ , H(y)↑ ] = [{:.3f}, {:.2f}, {:.2f}]".format(
-        len(model_cdsvae_list), np.mean(loss_total), np.mean(kl_total), np.mean(H_y_total)))
+    print(" total mean (M={}) [Error↓ , KL↓ , H(y|x)↓ , H(y)↑ ] = [{:.3f} & {:.3f} & {:.2f} & {:.2f}]".format(
+        len(model_cdsvae_list), np.mean(loss_total), np.mean(kl_total), np.mean(Hyx_total), np.mean(H_y_total)))
     print("-----------------------------------------------------------------------")
+
+

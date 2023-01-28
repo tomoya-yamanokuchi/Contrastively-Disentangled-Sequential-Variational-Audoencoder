@@ -1,0 +1,30 @@
+name             : c-dsvae
+
+network:
+  # Frame Encoder
+  frame_encoder:
+    name             : "full_conv"
+    in_channels      : 3
+    dim_frame_feature: 128
+
+  # Bi-LSTM Encoder
+  bi_lstm_encoder:
+    hidden_dim  : 256
+
+  # Context Encoder
+  context_encoder:
+    context_dim : 8
+
+  # Motion Encoder
+  motion_encoder:
+    name       : "lstm"
+    state_dim  : 12
+
+  # Frame Decoder
+  frame_decoder:
+    name: "full_conv"
+
+  # DynamicsModel
+  motion_prior:
+    state_dim  : 12
+    hidden_dim : 256

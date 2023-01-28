@@ -9,7 +9,7 @@ from domain.test.TestModel import TestModel
 from domain.datamodule.DataModuleFactory import DataModuleFactory
 from custom.utility.image_converter import torch2numpy
 import cv2; cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-
+from custom import to_numpy
 
 config     = OmegaConf.load("./conf/datamodule/sprite_JunwenBai.yaml")
 datamodule = DataModuleFactory().create(**config)

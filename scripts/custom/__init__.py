@@ -14,6 +14,7 @@ from custom.utility.create_gif import create_gif
 from custom.utility.reoder import reorder
 from custom.utility.save_image import save_image
 from custom.utility.save_image_as_gif import save_image_as_gif
+from custom.utility.get_pc_name import get_pc_name
 
 
 __version__ = '0.1.0'

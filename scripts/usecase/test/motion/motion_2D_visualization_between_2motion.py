@@ -32,52 +32,29 @@ class TestDClaw:
 
 
     def load_evaluation_dataset(self):
-        # ----- training dataset for calculating marginal predictive distribution ------
-        config_datamodule    = OmegaConf.load("./conf/datamodule/action_norm_valve.yaml")
-        datamodule = DataModuleFactory().create(**config_datamodule)
+        datamodule = DataModuleFactory().create(**self.config_model.datamodule)
         datamodule.setup(stage="test")
         self.test_dataloader = datamodule.test_dataloader()
 
 
     def evaluate(self):
-        index_motion1 = 0
-        index_motion2 = 4
-        num_use_index = 2
+        index_motion1        = 0
+        index_motion2        = 1
+        num_use_index        = 2
+        num_action_variation = 6
         for index, data in self.test_dataloader:
-            x = data['images'] # image
-            b = data['sensors'] # image
-            u = data['ctrl']   # ctrl
+            x         = data['images'] # image
+            x_motion1 = x[index_motion1::num_action_variation][:num_use_index].contiguous()
+            x_motion2 = x[index_motion2::num_action_variation][:num_use_index].contiguous()
 
-            x_motion1 = x[index_motion1::8][:num_use_index].contiguous()
-            b_motion1 = b[index_motion1::8][:num_use_index].contiguous()
-            u_motion1 = u[index_motion1::8][:num_use_index].contiguous()
-
-            x_motion2 = x[index_motion2::8][:num_use_index].contiguous()
-            b_motion2 = b[index_motion2::8][:num_use_index].contiguous()
-            u_motion2 = u[index_motion2::8][:num_use_index].contiguous()
+            # import ipdb; ipdb.set_trace()
 
             z_sample_encoded_list = []
-            for i, (_x, _b, _u) in enumerate(zip([x_motion1, x_motion2], [b_motion1, b_motion2], [u_motion1, u_motion2])):
+            for i, _x in enumerate([x_motion1, x_motion2]):
                 # << encode original data >>
-                return_dict      = self.model(_x, _b, _u)
+                return_dict      = self.model(_x)
                 z_sample_encoded = return_dict["z_sample"]
-                z_sample_prior   = return_dict["z_sample_prior"]
                 x_recon          = return_dict["x_recon"]
-                b_recon          = return_dict["b_recon"]
-
-                # import ipdb; ipdb.set_trace()
-                b_recon     = to_numpy(b_recon)
-                num_batch, step, dim_b = b_recon.shape
-                sensor_plot = SensorPlot(xlabel="step", title="")
-                # import ipdb; ipdb.set_trace()
-
-
-                for j in range(num_use_index):
-                    sensor_plot.plot_true(np.linspace(0, step-1, step), to_numpy(_b[j]))
-                    sensor_plot.plot(np.linspace(0, step-1, step), b_recon[j])
-                sensor_plot.save_fig(os.path.join(test.save_dir, "sensor_motion{}.png".format(i)))
-                import ipdb; ipdb.set_trace()
-
 
                 save_image(save_path=os.path.join(test.save_dir, "motion{}_x.png"      .format(i)), image=_x,      normalize=True)
                 save_image(save_path=os.path.join(test.save_dir, "motion{}_x_recon.png".format(i)), image=x_recon, normalize=True)
@@ -95,7 +72,7 @@ class TestDClaw:
 
 if __name__ == '__main__':
 
-    group_model  = "cdsvae_dclaw_ctrl_5"
+
 
     model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230119151208]-[remote_tsukumo3090ti]-popo"
     model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230123053236]-[remote_tsukumo3090ti]-conv_content"
@@ -103,6 +80,10 @@ if __name__ == '__main__':
     model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230126024440]-[remote_3090]-kkk"
     model_cdsvae = "[c-dsvae]-[action_norm_valve]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230126090633]-[remote_tsukumo3090ti]-vvv"
 
+    model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230127190220]-[remote_tsukumo3090ti]-mmm"
+
+
+    group_model  = "cdsvae_dclaw_deterministic"
     test = TestDClaw()
     test.load_model(group=group_model, model=model_cdsvae)
     test.load_evaluation_dataset()
