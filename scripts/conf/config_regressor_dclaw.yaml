@@ -1,0 +1,41 @@
+defaults:
+  - model     : regressor_dclaw
+  - datamodule: robel_dclaw_deterministic
+
+num_ensemble: 5
+
+logger:
+  save_dir         : "./logs/"
+  name             : "regressor_dclaw_deterministic"
+  default_hp_metric: False
+
+experiment:
+  # manual_seed: 1265
+  manual_seed:
+
+trainer:
+  gpus                : [0]
+  max_epochs          : 10
+  enable_progress_bar : True
+  deterministic       : False
+  log_every_n_steps   : 1
+
+optimizer:
+  lr   : 0.001
+  betas: [0.9, 0.999]
+
+scheduler:
+  name: "none"
+
+loss:
+  beta: 0.5
+
+checkpoint:
+  every_n_epochs : 50
+  save_top_k     : -1
+  save_last      : True
+
+reload:
+  path:
+
+memo: ""

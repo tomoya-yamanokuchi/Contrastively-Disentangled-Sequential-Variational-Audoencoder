@@ -1,5 +1,5 @@
 from .sprite_JunwenBai.SpriteJunwenBaiDataModule import SpriteJunwenBaiDataModule
-from .robel_claw_valve.ActionNormalizedValveDataModule import ActionNormalizedValveDataModule
+from .robel_dclaw_valve.ActionNormalizedValveDataModule import ActionNormalizedValveDataModule
 from .robel_dclaw_valve_deterministic.ROBELDClawValveDeterministicDataModule import ROBELDClawValveDeterministicDataModule
 
 '''

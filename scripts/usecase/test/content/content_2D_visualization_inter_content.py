@@ -63,7 +63,7 @@ class TestDClaw:
                 x_recon          = return_dict["x_recon"]
                 f_sample         = return_dict["f_sample"]
 
-                save_image(save_path=os.path.join(test.save_dir, "motion{}_x.png"      .format(i)), image=x_inter_domain,      normalize=True)
+                save_image(save_path=os.path.join(test.save_dir, "content{}_x.png"      .format(i)), image=x_inter_domain,      normalize=True)
                 f_sample_list.append(f_sample)
             break
 
@@ -74,10 +74,15 @@ class TestDClaw:
 if __name__ == '__main__':
 
 
-
     model_cdsvae = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230127014016]-remote_3090_ddd"
     model_cdsvae = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230127014103]-tsukumo3090ti_ddd"
     model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230127190220]-[remote_tsukumo3090ti]-mmm"
+    model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128081520]-[remote_tsukumo3090ti]-unique_content"
+    model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128081445]-[remote_3090]-unique_content"
+
+
+    model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128155146]-[remote_3090]-unique_content_s"
+    # model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128124230]-[remote_tsukumo3090ti]-unique_content_s"
 
 
     group_model  = "cdsvae_dclaw_deterministic"
@@ -104,4 +109,4 @@ if __name__ == '__main__':
         # import ipdb; ipdb.set_trace()
         vis.scatter_circle(f_embedded_1content, np.tile(np.array(cmap(i)).reshape(1, -1), (num_action, 1)), markersize, label="content{}".format(i))
         vis.write_text(f_embedded_1content, text, fontsize=9)
-    vis.save_fig(save_path=os.path.join(test.save_dir, "motion_vector.png"), dpi=500)
+    vis.save_fig(save_path=os.path.join(test.save_dir, "content_2D.png"), dpi=500)

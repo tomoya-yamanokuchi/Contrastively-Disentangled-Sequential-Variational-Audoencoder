@@ -82,6 +82,9 @@ if __name__ == '__main__':
 
     model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230127190220]-[remote_tsukumo3090ti]-mmm"
 
+    model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128155146]-[remote_3090]-unique_content_s"
+    # model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128124230]-[remote_tsukumo3090ti]-unique_content_s"
+
 
     group_model  = "cdsvae_dclaw_deterministic"
     test = TestDClaw()

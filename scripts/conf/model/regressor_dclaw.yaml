@@ -1,0 +1,17 @@
+name             : regressor_dclaw
+
+network:
+  # Frame Encoder
+  frame_encoder:
+    in_channels      : 3
+    dim_frame_feature: 128
+
+  # (== bi-lstm)
+  lstm_encoder:
+    dim_lstm_hidden : 256
+
+  # ensemble layer
+  ensemble_network:
+    dim_hidden: 256
+
+  dim_out   : 8

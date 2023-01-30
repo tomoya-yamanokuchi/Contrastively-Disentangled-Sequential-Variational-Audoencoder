@@ -45,6 +45,8 @@ class TestDClaw:
         self.test_dataloader = datamodule.test_dataloader()
 
 
+
+
     def evaluate(self):
         z_mean_x     = []
         z_logvar_x   = []
@@ -56,8 +58,8 @@ class TestDClaw:
         ensemble_var  = []
         y_true        = []
         for index, data in self.test_dataloader:
-            x = data['input']  # image
-            y = data['output'] # state
+            x = data['images']
+            y = data['state']
 
             y = to_numpy(y)
 
@@ -135,8 +137,20 @@ if __name__ == '__main__':
 
     # search_key = "melco"
     # search_key = "remote3090"
-    search_key = "remote_tsukumo3090ti"
-    search_key = "remote_3090"
+    # search_key = "remote_tsukumo3090ti"
+    # search_key = "remote_3090"
+
+    # search_key = "[remote_tsukumo3090ti]-unique_content"
+    # search_key = "[remote_3090]-unique_content"
+
+    # search_key   = "[remote_3090]-mmm"
+    # search_key   = "[remote_tsukumo3090ti]-mmm"
+
+    # search_key = "[remote_3090]-unique_content_s"
+    # search_key = "[remote_tsukumo3090ti]-unique_content_s"
+
+    # search_key = "[remote_3090]-www"
+    search_key = "[remote_tsukumo3090ti]-www"
 
     group_model       = "cdsvae_dclaw_deterministic"
     pathlib_obj       = pathlib.Path("/hdd_mount/logs_cdsvae/{}".format(group_model))
@@ -151,8 +165,8 @@ if __name__ == '__main__':
 
     for m, model_cdsvae in enumerate(model_cdsvae_list):
 
-        model_eval  = "[regressor_dclaw]-[action_norm_valve]-[dim_out=8]-[dim_fc_hidden=256]-[100epoch]-[num_batch=128]-[beta=0.5]-[20230109222005]-[melco]-"
-        group_eval  = "regressor_dclaw"
+        model_eval  = "[regressor_dclaw]-[robel_dclaw_deterministic]-[dim_out=8]-[dim_fc_hidden=256]-[30epoch]-[num_batch=128]-[beta=0.5]-[20230128120724]-[dl-box]-"
+        group_eval  = "regressor_dclaw_deterministic"
 
         test        = TestDClaw()
         test.load_model(group=group_model, model=model_cdsvae)

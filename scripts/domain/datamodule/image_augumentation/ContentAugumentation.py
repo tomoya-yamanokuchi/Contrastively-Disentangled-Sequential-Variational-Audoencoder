@@ -5,7 +5,6 @@ from torch import Tensor
 class ContentAugumentation:
     def augment(self, img: Tensor):
         '''
-        random shuffle
         - keep  : context
         - change: dynamics
         '''

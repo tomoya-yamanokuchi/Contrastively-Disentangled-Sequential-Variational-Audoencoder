@@ -1,0 +1,114 @@
+import torch
+import numpy as np
+from pprint import pprint
+from torchvision import transforms
+from torch.utils.data import Dataset
+from torchvision.datasets import VisionDataset
+import shelve
+from natsort import natsorted
+from pathlib import Path
+from typing import List, Tuple, Optional, Callable
+# import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
+from ..image_augumentation.ContentAugumentation import ContentAugumentation
+from ..image_augumentation.MotionAugumentation import MotionAugumentation
+from custom.utility.normalize import normalize
+from .database2tensor.State2Tensor import State2Tensor
+from .database2tensor.Ctrl2Tensor import Ctrl2Tensor
+from .database2tensor.sensor2tensor.Sensor2TensorFactory import Sensor2TensorFactory
+from .database2tensor.Image2Tensor import Image2Tensor
+
+
+class ActionNormalizedValve_all_preload(VisionDataset):
+    ''' Sprite Dataset
+        - sequence
+            - train: 2000
+            - test : 200
+        - step              : 25
+        - image size        : (3, 64, 64)
+        - action variation  : 8
+            - claw1だけ動く
+            - claw2だけ動く
+            - claw3だけ動く
+            - ３本同時に動く（左右）など
+        - minmax value:
+            - min: -1.0
+            - max:  1.0
+    '''
+
+    def __init__(self, data_dir: str, train: bool, data_type: dict):
+        self.data_dir                  = data_dir
+        self.train                     = train
+        self.data_type                 = data_type
+        self.img_paths                 = self._get_img_paths()
+        self.num_data                  = len(self.img_paths)
+        self.state2tensor              = State2Tensor(data_type["robot_state"])
+        self.ctrl2tensor               = Ctrl2Tensor(data_type["ctrl_type"])
+        self.sensor2tensor             = Sensor2TensorFactory().create(data_type["sensor_type"])
+        self.image2tensor              = Image2Tensor()
+        self.content_augumentation     = ContentAugumentation()
+        self.motion_augumentation      = MotionAugumentation()
+        self.__all_preload()
+
+
+    def _get_img_paths(self):
+        """
+        指定したディレクトリ内の画像ファイルのパス一覧を取得する。
+        """
+        if self.train: img_dir = self.data_dir + "/dataset_202210221514_valve2000_train/"
+        else         : img_dir = self.data_dir + "/dataset_20221022153117_valve200_test/"
+        img_dir = Path(img_dir)
+        img_paths = [p for p in img_dir.iterdir() if p.suffix == ".db"]
+        img_paths = natsorted(img_paths)
+        # import ipdb; ipdb.set_trace()
+        return img_paths
+
+
+    def __all_preload(self):
+        self.images  = []
+        self.sensors = []
+        self.c_aug   = []
+        self.m_aug   = []
+        self.state   = []
+        self.ctrl    = []
+        for path in self.img_paths:
+            path_without_suffix = str(path.resolve()).split(".")[0]          #; print(path_without_suffix)
+            db                  = shelve.open(path_without_suffix, flag='r') # read only
+
+            img_torch = self.image2tensor.get(db)
+            self.images.append(img_torch)
+            self.sensors.append(self.sensor2tensor.get(db))
+            self.c_aug.append(self.content_augumentation.augment(img_torch))
+            self.m_aug.append(self.motion_augumentation.augment(img_torch))
+            self.state.append(self.state2tensor.get(db))
+            self.ctrl.append(self.ctrl2tensor.get(db))
+
+        self.images  = torch.stack(self.images, axis=0)
+        self.sensors = torch.stack(self.sensors, axis=0)
+        self.c_aug   = torch.stack(self.c_aug, axis=0)
+        self.m_aug   = torch.stack(self.m_aug, axis=0)
+        self.state   = torch.stack(self.state, axis=0)
+        self.ctrl    = torch.stack(self.ctrl, axis=0)
+
+        # self.sensors.max()
+        # self.sensors.min()
+        # import ipdb; ipdb.set_trace()
+
+
+
+    def __len__(self):
+        """ディレクトリ内の画像ファイルの数を返す。
+        """
+        return len(self.img_paths)
+
+
+    def __getitem__(self, index: int):
+        return index, {
+            "images" : self.images[index].cuda(),
+            "c_aug"  : self.c_aug[index].cuda(),
+            "m_aug"  : self.m_aug[index].cuda(),
+            "state"  : self.state[index].cuda(),
+            "sensors": self.sensors[index].cuda(),
+            "ctrl"   : self.ctrl[index].cuda(),
+            "index"  : index,
+        }
+

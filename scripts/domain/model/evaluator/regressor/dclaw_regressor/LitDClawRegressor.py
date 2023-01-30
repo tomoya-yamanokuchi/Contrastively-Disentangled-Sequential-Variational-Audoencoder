@@ -46,8 +46,8 @@ class LitDClawRegressor(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         index, data = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
-        x = data['input']
-        y = data['output']
+        x = data['images']
+        y = data['state']
 
         # import ipdb; ipdb.set_trace()
         results_dict = self.model.forward(x)
@@ -65,8 +65,8 @@ class LitDClawRegressor(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         index, data = batch  # shape = [num_batch, step, channel, w, h], Eg.) [128, 8, 3, 64, 64])
-        x = data['input']
-        y = data['output']
+        x = data['images']
+        y = data['state']
 
         # import ipdb; ipdb.set_trace()
         results_dict = self.model.forward(x)

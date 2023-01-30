@@ -24,6 +24,14 @@ class DClawRegressor(nn.Module):
             nn.Linear(dim_hidden, dim_out),
             Softplus(),
         )
+
+        # self.mean = nn.Linear(dim_in, dim_out)
+
+        # self.var = nn.Sequential(
+        #     nn.Linear(dim_in, dim_out),
+        #     Softplus(),
+        # )
+
         self.beta    = loss.beta
 
 

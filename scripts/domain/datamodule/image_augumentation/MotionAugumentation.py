@@ -1,6 +1,7 @@
 import torch
 from torch import Tensor
 from torchvision import transforms
+from custom import normalize
 
 
 class MotionAugumentation:
@@ -14,9 +15,7 @@ class MotionAugumentation:
         - Gaussian blur
         - reshaping
     '''
-    def __init__(self, min: float, max: float):
-        self.min = Tensor([min])
-        self.max = Tensor([max])
+    def __init__(self):
         self.transform_color_dist   = self.get_transform_color_distortion()
         self.transform_GaussianBlur = self.get_transform_GaussianBlur()
 
@@ -28,9 +27,6 @@ class MotionAugumentation:
         assert (img.min() >= 0.0) and (img.max() <= 1.0)
         img = self.transform_color_dist(img)
         img = torch.cat([self.transform_GaussianBlur(_img) for _img in torch.split(img, 1, 0)], dim=0)
-        # ------
-        img = torch.maximum(img, Tensor([0.0]))
-        img = torch.minimum(img, Tensor([1.0]))
         return img
 
 

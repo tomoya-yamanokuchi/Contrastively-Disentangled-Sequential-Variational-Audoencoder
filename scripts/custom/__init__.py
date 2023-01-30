@@ -15,6 +15,7 @@ from custom.utility.reoder import reorder
 from custom.utility.save_image import save_image
 from custom.utility.save_image_as_gif import save_image_as_gif
 from custom.utility.get_pc_name import get_pc_name
-
+from custom.utility.assert_range import assert_range
+from custom.utility.to_tensor import to_tensor
 
 __version__ = '0.1.0'

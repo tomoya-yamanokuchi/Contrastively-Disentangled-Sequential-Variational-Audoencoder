@@ -2,7 +2,10 @@ import torch
 import torch.nn as nn
 from omegaconf import OmegaConf
 from .DClawRegressor import DClawRegressor
-from .FullConvFrameEncoder import FullConvFrameEncoder as encoder
+# from .FullConvFrameEncoder import FullConvFrameEncoder as encoder
+
+
+from ....contrastively_disentangled_sequential_variational_autoencoder.inference_model.frame_encoder.FullConvFrameEncoder import FullConvFrameEncoder as encoder
 
 
 class EnsembleDClawRegressor(nn.Module):
@@ -37,7 +40,6 @@ class EnsembleDClawRegressor(nn.Module):
             "mean" : mean,
             "var"  : var,
         }
-
 
     def loss_function(self,
                     target                   ,

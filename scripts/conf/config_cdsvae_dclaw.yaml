@@ -4,7 +4,7 @@ defaults:
 
 logger:
   save_dir         : "./logs/"
-  name             : "cdsvae_dclaw"
+  name             : "cdsvae_dclaw_revisit"
   default_hp_metric: False
 
 experiment:
