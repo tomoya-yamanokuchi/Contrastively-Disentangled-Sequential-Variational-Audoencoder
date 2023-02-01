@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
     num_eval_per_model = 1
 
-
+    acc=[]; IS=[]; H_yx=[]; H_y=[]
     for m, model_cdsvae in enumerate(model_cdsvae_list):
         config_classifier = OmegaConf.load("./conf/model/classifier_sprite.yaml")
 
@@ -158,4 +158,13 @@ if __name__ == '__main__':
         test.load_evaluator(config_classifier)
         test.load_evaluation_dataset()
 
-        test.evaluate()
+        _acc, _IS, _H_yx, _H_y = test.evaluate()
+        acc.append(_acc); IS.append(_IS); H_yx.append(_H_yx); H_y.append(_H_y)
+
+    acc_mean  = np.mean(acc)
+    IS_mean   = np.mean(IS)
+    H_yx_mean = np.mean(H_yx)
+    H_y_mean  = np.mean(H_y)
+
+    print('Overall Mean = [acc[%], IS, H_yx, H_y] = [{:.2f}, {:.3f}, {:.3f}, {:.3f}]'.format(
+        acc_mean*100, IS_mean, H_yx_mean, H_y_mean))

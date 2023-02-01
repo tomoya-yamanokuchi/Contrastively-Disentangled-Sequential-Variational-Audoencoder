@@ -29,6 +29,7 @@ model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[2023010
 
 model = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=8]-[dim_z=12]-[100epoch]-[20230131183616]-[remote_tsukumo3090ti]-revisit"
 # model = "[c-dsvae_high_dim]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230201055820]-[remote_tsukumo3090ti]-high_dim"
+model = "[c-dsvae_high_dim]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230201073453]-[remote_tsukumo3090ti]-high_dim"
 
 # group = 'cdsvae_sprite'
 group = 'cdsvae_sprite_revisit'

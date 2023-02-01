@@ -86,6 +86,7 @@ if __name__ == '__main__':
     model_cdsvae = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=8]-[dim_z=12]-[100epoch]-[20230131161458]-[remote_tsukumo3090ti]-revisit"
 
     model_cdsvae = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=8]-[dim_z=12]-[100epoch]-[20230131170209]-[remote_tsukumo3090ti]-revisit"
+    model_cdsvae = "[c-dsvae_high_dim]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230201073453]-[remote_tsukumo3090ti]-high_dim"
 
     group_model  = "cdsvae_sprite_revisit"
 

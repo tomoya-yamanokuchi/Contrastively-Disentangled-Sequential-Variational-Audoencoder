@@ -42,7 +42,7 @@ class MotionVectorPlot:
     def save_fig(self, save_path: str, dpi:int=200):
         # import ipdb; ipdb.set_trace()
         # self._set_lim()
-        # self._set_legened()
+        self._set_legened()
         # self.fig.colorbar(self.mappable, self.ax)
         # self.fig.colorbar()
         self.fig.savefig(save_path, bbox_inches='tight', dpi=dpi)

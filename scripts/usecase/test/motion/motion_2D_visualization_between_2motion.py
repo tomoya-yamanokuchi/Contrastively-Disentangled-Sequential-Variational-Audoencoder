@@ -84,9 +84,10 @@ if __name__ == '__main__':
 
     model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128155146]-[remote_3090]-unique_content_s"
     # model_cdsvae = "[c-dsvae]-[robel_dclaw_deterministic]-[dim_f=8]-[dim_z=12]-[300epoch]-[20230128124230]-[remote_tsukumo3090ti]-unique_content_s"
+    model_cdsvae = "[c-dsvae_high_dim]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230201073453]-[remote_tsukumo3090ti]-high_dim"
 
-
-    group_model  = "cdsvae_dclaw_deterministic"
+    # group_model  = "cdsvae_dclaw_deterministic"
+    group_model  = "cdsvae_sprite_revisit"
     test = TestDClaw()
     test.load_model(group=group_model, model=model_cdsvae)
     test.load_evaluation_dataset()
