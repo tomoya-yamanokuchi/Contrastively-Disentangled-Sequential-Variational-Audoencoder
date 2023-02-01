@@ -23,16 +23,20 @@ def main(opt, model):
             config_dir  = log_dir,
             checkpoints = "last.ckpt"
         )
-        cdsvae      = test.load_model()
-        test_loader = test.load_dataloader()
+        import ipdb; ipdb.set_trace()
+        cdsvae, config = test.load_model()
+        import ipdb; ipdb.set_trace()
+        test_loader    = test.load_dataloader()
+        import ipdb; ipdb.set_trace()
     else:
         raise ValueError('missing checkpoint')
 
     classifier  = classifier_Sprite_all(opt)
     loaded_dict = torch.load(opt.resume)
+    import ipdb; ipdb.set_trace()
     classifier.load_state_dict(loaded_dict['state_dict'])
     classifier  = classifier.cuda().eval()
-
+    import ipdb; ipdb.set_trace()
 
     acc_list  = []
     IS_list   = []
@@ -43,7 +47,7 @@ def main(opt, model):
     for epoch in range(opt.niter):
 
         # print("Epoch", epoch)
-        cdsvae.eval()
+        # cdsvae.eval()
         mean_acc0, mean_acc1, mean_acc2, mean_acc3, mean_acc4 = 0, 0, 0, 0, 0
         mean_acc0_sample, mean_acc1_sample, mean_acc2_sample, mean_acc3_sample, mean_acc4_sample = 0, 0, 0, 0, 0
         pred1_all, pred2_all, label2_all = list(), list(), list()
@@ -55,6 +59,7 @@ def main(opt, model):
             c_aug   = data['c_aug']
             m_aug   = data['m_aug']
 
+            import ipdb; ipdb.set_trace()
             if opt.type_gt == "action": recon_x_sample, recon_x = cdsvae.forward_fixed_motion_for_classification(x)
             else:                       recon_x_sample, recon_x = cdsvae.forward_fixed_content_for_classification(x)
 
@@ -63,7 +68,7 @@ def main(opt, model):
                 pred_action2, pred_skin2, pred_pant2, pred_top2, pred_hair2 = classifier(recon_x_sample)
                 pred_action3, pred_skin3, pred_pant3, pred_top3, pred_hair3 = classifier(recon_x)
 
-                import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
 
                 pred1 = F.softmax(pred_action1, dim = 1)
                 pred2 = F.softmax(pred_action2, dim = 1)
@@ -123,30 +128,35 @@ def main(opt, model):
 
 
 if __name__ == '__main__':
-    import hydra
+    import hydra, glob
     from omegaconf import DictConfig, OmegaConf
-    @hydra.main(version_base=None, config_path="../../conf", config_name="config_classifier")
-    def get_config(cfg: DictConfig) -> None:
 
-        import glob
-        group_name     = "cdsvae_sprite"
 
-        search_keyward = "melco_mmm"
+    # @hydra.main(version_base=None, config_path="../../conf", config_name="config_classifier")
+    def get_config() -> None:
+
+        # import ipdb; ipdb.set_trace()
+        # group_name     = "cdsvae_sprite_revisit"
+
+        # search_keyward = "melco_mmm"
         # search_keyward = "remote3090_mmm"
         # search_keyward = "fixed_logdensity"
         # search_keyward = "melco_new_logdensity_cdsvae"
         # search_keyward = "remote3090_new_logdensity_naive_dsvae"
+        search_key = "[remote_tsukumo3090ti]-revisit"
 
         '''
         ＊古いモデルだと　loss=config.loss　のパラメータがないのでエラーになる
         '''
 
-        log_dir        = os.path.join("/hdd_mount/logs_cdsvae", group_name)
-        model_list     = glob.glob('{}/*{}'.format(log_dir, search_keyward))
+        group_model       = "cdsvae_sprite_revisit"
+        pathlib_obj       = pathlib.Path("/hdd_mount/logs_cdsvae/{}".format(group_model))
+        model_cdsvae_list = [str(model).split("/")[-1] for model in list(pathlib_obj.glob("*")) if search_key in str(model)]
 
         acc=[]; IS=[]; H_yx=[]; H_y=[]
-        for model in model_list:
-            # import ipdb; ipdb.set_trace()
+        for model in model_cdsvae_list:
+
+
             _acc, _IS, _H_yx, _H_y = main(cfg.model, model)
             acc.append(_acc); IS.append(_IS); H_yx.append(_H_yx); H_y.append(_H_y)
 

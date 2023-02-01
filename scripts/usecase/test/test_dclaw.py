@@ -150,9 +150,12 @@ if __name__ == '__main__':
     # search_key = "[remote_tsukumo3090ti]-unique_content_s"
 
     # search_key = "[remote_3090]-www"
-    search_key = "[remote_tsukumo3090ti]-www"
+    # search_key = "[remote_tsukumo3090ti]-www"
 
-    group_model       = "cdsvae_dclaw_deterministic"
+    search_key = "[remote_3090]-revisit"
+    search_key = "[remote_tsukumo3090ti]-revisit"
+
+    group_model       = "cdsvae_dclaw_revisit"
     pathlib_obj       = pathlib.Path("/hdd_mount/logs_cdsvae/{}".format(group_model))
     model_cdsvae_list = [str(model).split("/")[-1] for model in list(pathlib_obj.glob("*")) if search_key in str(model)]
 
@@ -165,8 +168,11 @@ if __name__ == '__main__':
 
     for m, model_cdsvae in enumerate(model_cdsvae_list):
 
-        model_eval  = "[regressor_dclaw]-[robel_dclaw_deterministic]-[dim_out=8]-[dim_fc_hidden=256]-[30epoch]-[num_batch=128]-[beta=0.5]-[20230128120724]-[dl-box]-"
-        group_eval  = "regressor_dclaw_deterministic"
+        model_eval  = "[regressor_dclaw]-[action_norm_valve]-[dim_out=8]-[dim_fc_hidden=256]-[100epoch]-[num_batch=128]-[beta=0.5]-[20230109222005]-[melco]-"
+        group_eval  = "regressor_dclaw"
+
+        # model_eval  = "[regressor_dclaw]-[robel_dclaw_deterministic]-[dim_out=8]-[dim_fc_hidden=256]-[30epoch]-[num_batch=128]-[beta=0.5]-[20230128120724]-[dl-box]-"
+        # group_eval  = "regressor_dclaw_deterministic"
 
         test        = TestDClaw()
         test.load_model(group=group_model, model=model_cdsvae)

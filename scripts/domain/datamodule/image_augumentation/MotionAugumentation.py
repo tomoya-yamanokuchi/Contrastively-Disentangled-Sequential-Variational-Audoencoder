@@ -18,6 +18,8 @@ class MotionAugumentation:
     def __init__(self):
         self.transform_color_dist   = self.get_transform_color_distortion()
         self.transform_GaussianBlur = self.get_transform_GaussianBlur()
+        self.min                    = torch.Tensor([0.0])
+        self.max                    = torch.Tensor([1.0])
 
 
     def augment(self, img: Tensor):
@@ -27,6 +29,9 @@ class MotionAugumentation:
         assert (img.min() >= 0.0) and (img.max() <= 1.0)
         img = self.transform_color_dist(img)
         img = torch.cat([self.transform_GaussianBlur(_img) for _img in torch.split(img, 1, 0)], dim=0)
+        # import ipdb; ipdb.set_trace()
+        img = torch.maximum(img, self.min)
+        img = torch.minimum(img, self.max)
         return img
 
 

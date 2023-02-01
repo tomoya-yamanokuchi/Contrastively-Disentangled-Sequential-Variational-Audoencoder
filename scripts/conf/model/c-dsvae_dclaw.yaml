@@ -1,4 +1,4 @@
-name             : c-dsvae
+name             : c-dsvae_dclaw
 
 network:
   # Frame Encoder

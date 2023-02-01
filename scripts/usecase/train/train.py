@@ -12,8 +12,10 @@ from domain.datamodule.DataModuleFactory import DataModuleFactory
 from domain.callbacks.CallbackTrainingTime import CallbackTrainingTime
 from custom import get_pc_name
 
+
+config_name = "config_cdsvae_sprite"
 # config_name = "config_cdsvae_sprite"
-config_name = "config_cdsvae_dclaw"
+# config_name = "config_cdsvae_dclaw"
 # config_name = "config_cdsvae_dclaw_deterministic"
 
 

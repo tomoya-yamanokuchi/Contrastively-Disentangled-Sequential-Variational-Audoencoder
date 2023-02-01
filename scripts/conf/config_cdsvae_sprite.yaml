@@ -1,10 +1,10 @@
 defaults:
-  - model     : c-dsvae
+  - model     : c-dsvae_high_dim # c-dsvae
   - datamodule: sprite_JunwenBai
 
 logger:
   save_dir         : "./logs/"
-  name             : "cdsvae_sprite_2"
+  name             : "cdsvae_sprite_revisit"
   default_hp_metric: False
 
 experiment:

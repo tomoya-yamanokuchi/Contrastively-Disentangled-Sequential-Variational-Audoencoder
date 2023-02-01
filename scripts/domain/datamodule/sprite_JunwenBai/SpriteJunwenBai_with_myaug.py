@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import torch
 from torchvision.datasets import VisionDataset
-import sys; import pathlib; p=pathlib.Path(); sys.path.append(str(p.parent.resolve()))
+import sys; import pathlib; p=pathlib.Path("./"); sys.path.append(str(p.parent.resolve()))
 from ..image_augumentation.ContentAugumentation import ContentAugumentation
 from ..image_augumentation.MotionAugumentation import MotionAugumentation
 
@@ -28,7 +28,7 @@ class SpriteJunwenBai_with_myaug(VisionDataset):
         self.min                   = 0.0
         self.max                   = 1.0
         self.content_augumentation = ContentAugumentation()
-        self.motion_augumentation  = MotionAugumentation(min=self.min, max=self.max)
+        self.motion_augumentation  = MotionAugumentation()
         self.__all_preload_and_preprocessing()
 
 

@@ -27,7 +27,11 @@ model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[2023010
 # model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103091218]-remote3090_mmm'
 # model = '[c-dsvae]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230103100839]-remote3090_mmm'
 
-group = 'cdsvae_sprite'
+model = "[c-dsvae]-[sprite_JunwenBai]-[dim_f=8]-[dim_z=12]-[100epoch]-[20230131183616]-[remote_tsukumo3090ti]-revisit"
+# model = "[c-dsvae_high_dim]-[sprite_JunwenBai]-[dim_f=256]-[dim_z=32]-[100epoch]-[20230201055820]-[remote_tsukumo3090ti]-high_dim"
+
+# group = 'cdsvae_sprite'
+group = 'cdsvae_sprite_revisit'
 
 # ----------------------------------------------------------------------------------
 log_dir = "/hdd_mount/logs_cdsvae/{}/".format(group)
@@ -35,8 +39,8 @@ test    = TestModel(
     config_dir  = log_dir + model,
     checkpoints = "last.ckpt"
 )
-model      = test.load_model()
-dataloader = test.load_dataloader()
+model, config = test.load_model()
+dataloader    = test.load_dataloader()
 # ----------------------------------------------------------------------------------
 num_slice  = 1
 _step      = 0

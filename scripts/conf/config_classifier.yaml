@@ -6,7 +6,7 @@ reload:
   path:
 
 logger:
-  save_dir         : "logs/"
+  save_dir         : "./logs/"
   name             : "classifier"
   default_hp_metric: False
 
@@ -33,6 +33,6 @@ checkpoint:
   save_top_k              : -1
   save_last               : True
   # save_on_train_epoch_end : True
-  monitor                 : "loss"
+  # monitor                 : "loss"
 
 memo: ""
